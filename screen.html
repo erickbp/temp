@@ -1,0 +1,694 @@
+
+<html>
+<head>
+<script src="jquery-1.11.3.min.js"></script>
+<script src="lawnchair.js"></script>
+<script src="encoder.js"></script>
+
+<script type='text/javascript' src="adapters/dom.js"></script>
+<script type='text/javascript' src="adapters/webkit-sqlite.js"></script>
+</head>
+<style>
+.visible {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 2s linear;
+}
+.hidden {
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s 2s, opacity 2s linear;
+}
+.hiddenimd {
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s 0s, opacity 0s linear;
+}
+.rotate90 {
+    -moz-transform-origin: 0 0;
+    -ms-transform-origin: 0 0;
+    -o-transform-origin: 0 0;
+    -webkit-transform-origin: 0 0;
+    transform-origin: 0 0;
+
+    -ms-transform: rotate(90deg); /* IE 9 */
+    -webkit-transform: rotate(90deg); /* Safari and Chrome */
+    -moz-transform: rotate(90deg);
+    -o-transform: rotate(90deg);
+    transform: rotate(90deg);
+}
+
+.rotate180 {
+    -moz-transform-origin: 50% 50%;
+    -ms-transform-origin: 50% 50%;
+    -o-transform-origin: 50% 50%;
+    -webkit-transform-origin: 50% 50%;
+    transform-origin: 50% 50%;
+
+    -ms-transform: rotate(180deg); /* IE 9 */
+    -webkit-transform: rotate(180deg); /* Safari and Chrome */
+    -moz-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+    transform: rotate(180deg);
+}
+
+.rotate270 {
+    -moz-transform-origin: 0 0; 
+    -ms-transform-origin: 0 0;
+    -o-transform-origin: 0 0;
+    -webkit-transform-origin: 0 0;
+    transform-origin: 0 0;
+
+    -ms-transform: rotate(270deg); /* IE 9 */
+    -webkit-transform: rotate(270deg); /* Safari and Chrome */
+    -moz-transform: rotate(270deg);
+    -o-transform: rotate(270deg);
+    transform: rotate(270deg);
+}
+
+</style>
+<body>
+<input type='text' id='data' value="7th data" style="display:none"><input type="submit" style="display:none" value="updateContent(data)" onClick="updateContent(document.getElementById('data').value);">
+<div id="topContainer">
+	<div id="viewport" style="left:0px;top:0px;display:block;height:100%;width:100%;position:absolute;background-color:none;z-index:15;overflow:hidden"></div>
+	<div id="viewportmaster" style="left:0px;top:0px;display:block;height:100%;width:100%;position:absolute;background-color:none;z-index:5;overflow:hidden"></div>
+
+	<div id="prerender" style="display:block;height:0px;width:0px;position:absolute;background-color:none;border:1px solid black;margin-top:500px;overflow:hidden"></div>
+	<div id="prerendermaster" style="display:block;height:0px;width;0px;position:absolute;border:1px solid black;margin-top:500px;overflow:hidden"></div>
+</div>
+<div id="console" style="display:none">Console:</div>
+
+<script>
+var people = new Lawnchair({name: "people"}, function(){});
+
+var slides = new Lawnchair({name: "slides"}, function(){});
+
+var masterslides = new Lawnchair({name: "masterslides"}, function(){});
+
+var playlists = new Lawnchair({name: "playlists"}, function(){});
+
+var schedules;
+var defaultpl="";
+var override="";
+var currentplaylist ="";
+var currentslide="";
+var currentmasterslide="";
+var currentschedule="";
+var slideTimer;
+var effectTimer;
+var clearScreenTimer;
+var slideCounter=0;
+var defaultmode = false;
+var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+var CANVAS_WIDTH, CANVAS_HEIGHT;
+var CANVAS_O_WIDTH = 1920;
+var CANVAS_O_HEIGHT = 1080;
+var CANVAS_ASPECT_RATIO = CANVAS_O_WIDTH / CANVAS_O_HEIGHT;
+
+var topContainer;
+
+ucArr = [];
+//ucArr[0] = new updateContentClass('{type: "playlist",id: 12312,"transitionMode": "fade-in-out", "slides":[	{"id": 46732, "timing": 6},{"id": 234,"timing": 6}, {"id": 34,"timing": 26}]}');
+
+//ucArr[0] = new updateContentClass('{type: "playlist",id: 12312, "slides":[	{"id": 46732, "timing": 6},{"id": 234,"timing": 6}, {"id": 34,"timing": 26}]}');
+
+
+ucExec = false;
+function updateContentClass(data) {
+    this.data = data;
+    this.runner = function() {
+        document.getElementById('console').innerHTML = document.getElementById('console').innerHTML + "</br>" + (this.data);
+		//var json = JSON.stringify(eval("(" + data + ")"));
+		var json = eval("(" + data + ")");
+		//var json = JSON.parse(data);
+		json.key = json.id;
+		//console.log(json.type);
+		
+		if(json.type == "playlist"){
+			if(json.slides){
+				playlists.save(json, function(obj){console.log(obj);
+				console.log('currentplaylist == json.id' + currentplaylist +" == "+ json.id);
+				if(currentplaylist == json.id){
+					
+					renderPlayList(json);
+				}
+				ucThreadNext();});
+				
+			} else {
+				playlist.remove(json.key, function(){ console.log('removed'); });
+			}
+		}
+		if(json.type == "slide"){
+			if(json.elements){
+				slides.save(json, function(obj){console.log(obj);ucThreadNext();});
+			} else {
+				slides.remove(json.key, function(){ console.log('removed'); });
+			}
+		}
+		if(json.type == "master-slide"){
+			if(json.elements){
+				masterslides.save(json, function(obj){console.log(obj);ucThreadNext();});
+			} else {
+				masterslides.remove(json.key, function(){ console.log('removed'); });
+			}
+		}
+		if(json.type == "schedule"){
+		  schedules = json;
+		  ucThreadNext();
+		}
+		if(json.type == "default"){
+			if(json.playlistId) {
+				defaultpl = json;
+				if(defaultmode){
+					startPlayList(json.playlistId, 0);
+				}
+			} else {
+				defaultpl = "";
+			}
+			ucThreadNext();
+		}
+		if(json.type == "override"){
+		  override = json;
+		  if(override.playlistId){
+			cleanUp();
+			currentplaylist = override.playlistId;
+			defaultmode = false;
+			startPlayList(override.playlistId, 0);
+		  } else {
+			cleanUpDefault();
+			override = "";
+		  }
+		  ucThreadNext();
+		}
+
+    };
+}
+
+function cleanUp(){
+	currentslide = "";
+	currentmasterslide = "";
+	document.getElementById("viewport").innerHTML = "";
+	document.getElementById("prerender").innerHTML = "";
+	document.getElementById("viewportmaster").innerHTML = "";
+	document.getElementById("prerendermaster").innerHTML = "";
+
+}
+function cleanUpDefault(){
+	cleanUp();
+	clearScreen();
+}
+function ucThreadNext() {
+		ucArr.splice(0,1);
+		setTimeout(ucThreadExec, 10);
+
+}
+function ucThreadExec(){
+	ucExec = true;
+    //console.log("in exec " + ucArr.length);
+	if(ucArr.length>0){console.log("calling runner");ucArr[0].runner();} else { console.log('ucThread end'); ucExec = false;}
+}
+function updateContent(data){
+	//console.log(ucExec);
+	ucArr[ucArr.length] = new updateContentClass(data);
+	//console.log(ucArr);
+	if(!ucExec){ucThreadExec();}
+}
+
+function scheduleCheckAndRun() {
+		var now = new Date();
+		//var d = new Date();
+		var d =  Date.UTC(now.getUTCFullYear(),now.getUTCMonth(), now.getUTCDate() , 
+      now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
+		var day = days[now.getUTCDay()].toLowerCase();
+		var month = now.getUTCMonth() + 1;
+		if (month < 10) {
+			month = "0" + month;
+		}
+		var numday = now.getUTCDate();
+		if (numday < 10) {
+			numday = "0" + numday;
+		}
+		var hr = now.getUTCHours();
+		var min = now.getUTCMinutes();
+		if (min < 10) {
+			min = "0" + min;
+		}
+		var sec = now.getUTCSeconds();
+		if (sec < 10) {
+			sec = "0" + sec;
+		}
+		var ampm = hr < 12 ? "am" : "pm";
+		var mmddyyyysec = (month) + '/' + numday + '/' +  now.getUTCFullYear() +" "+ hr + ":" + min + ":" + sec ;
+		
+		//if(hr>12){hr=hr-12};
+		var date = now.getUTCDate();
+		var format = hr+":"+min+":"+sec+" "+ampm;
+		//console.log(format);
+		try{
+//			console.log(schedules.playlists.length);
+			for(j=0;j<schedules.playlists.length;j++) {
+				// start
+//				console.log(schedules.playlists[j].start.weekDay);
+//				console.log(format);
+				if (day === schedules.playlists[j].start.weekDay && format == schedules.playlists[j].start.time) {
+					// specific function call
+					//alert("start");
+					currentschedule = schedules.playlists[j].id;
+					defaultmode = false;
+					startPlayList(schedules.playlists[j].id, 0);
+				}
+				// stop
+				if (day === schedules.playlists[j].end.weekDay && format == schedules.playlists[j].end.time) {
+					// specific function call
+					clearTimeout(slideTimer);
+					currentplaylist = "";
+					currentslide = "";
+					currentschedule = "";
+					//alert("stop");
+				}
+			}
+		} catch (err){}
+		if(override.playlistId){
+			//console.log("mmddyyyysec == override.end" + mmddyyyysec +" == "+ override.end)
+			if(mmddyyyysec == override.end){
+				clearTimeout(slideTimer);
+				currentplaylist = "";
+				currentslide = "";
+			}
+		}
+		//console.log("defaultpl.length currentplaylist.length " + defaultpl.playlistId + " : " + currentplaylist.length);
+		if(defaultpl.playlistId && currentplaylist.length<1){
+			defaultmode = true;
+			startPlayList(defaultpl.playlistId, 0);
+			
+		}
+        // exact ms to next minute interval
+        setTimeout(scheduleCheckAndRun, 1000);
+}
+
+function startPlayList(pId, sc){
+	playlists.get(pId, function(playJson) {
+        console.log("playlist: ");
+		console.log(playJson.slides.length);
+		slideCounter=sc;
+		clearTimeout(slideTimer);
+		clearTimeout(effectTimer);
+		renderPlayList(playJson);
+    });
+
+
+}
+
+function renderPlayList(playJson){
+	clearTimeout(clearScreenTimer);
+	clearTimeout(effectTimer);
+	clearTimeout(slideTimer);
+	currentplaylist=playJson.id;
+	var effect = false;
+	if(playJson.transitionMode){
+		if(playJson.transitionMode == "fade-in-out"){
+			effect = true;
+		}
+	}
+	if(effect){
+			effectTimer =setTimeout(function(){document.getElementById("viewport").className = "hidden";document.getElementById("viewportmaster").className = "hidden"; console.log('starting to hide');}, (playJson.slides[slideCounter].timing-2)*1000);
+
+	}
+	slides.get(playJson.slides[slideCounter].id, function(slideJson) {
+		if(slideJson){
+			renderSlide(playJson.slides[slideCounter].id, effect);
+			//console.log(playJson.slides[slideCounter].id);
+			slideTimer=setTimeout(function(){renderPlayList(playJson);}, playJson.slides[slideCounter].timing*1000);
+			slideCounter++;
+			if(slideCounter==playJson.slides.length){slideCounter=0; /*console.log("resetting");*/}
+
+		} else {
+			slideCounter++;
+			if(slideCounter==playJson.slides.length){slideCounter=0; /*console.log("resetting");*/}
+			renderPlayList(playJson);
+		
+		}
+	});
+}
+
+function renderSlide(sId, effect){
+	if(effect){
+		document.getElementById("viewport").className = "hiddenimd";document.getElementById("viewportmaster").className = "hiddenimd";
+	}
+	console.log(sId);
+	slides.get(sId, function(slideJson) {
+        console.log("slide: ");
+		console.log(slideJson);
+		if(slideJson){
+			document.getElementById("prerender").innerHTML = "";
+			setOrientation(slideJson.isLandscape);
+			//console.log(slideJson);
+			for(i=0;i<slideJson.elements.length;i++){
+				renderElements(slideJson.elements[i], 20, true);
+			}
+			looper("prerender");
+			
+			function looper(cname){
+				//console.log("in looper for " + cname );
+				if(isLoaded(cname)){
+					currentslide = sId;
+					/*
+					for(i=0;i<slideJson.elements.length;i++){
+						renderElements(slideJson.elements[i], 20, false);
+					}
+					*/
+					//if(effect){
+					//	document.getElementById("viewport").className = "visible"; 
+					//}
+					//document.getElementById("prerender").innerHTML = "";
+					
+					if(slideJson.masterSlideId){
+						renderMSlide(slideJson.masterSlideId, true, effect);
+					} else {
+						
+						document.getElementById("viewport").innerHTML = "";
+						document.getElementById("viewportmaster").innerHTML = "";
+						var newParent = document.getElementById('viewport');
+						var oldParent = document.getElementById('prerender');
+
+						while (oldParent.childNodes.length) {
+							newParent.appendChild(oldParent.childNodes[0]);
+						}
+						makeVisisble(effect);
+						
+						playVideos();
+						
+						
+						
+					}
+					//console.log("return");
+					return;
+				} else {
+					setTimeout(function (){looper(cname);} , 100);
+				}
+			}
+			
+		}
+    });
+
+}
+function makeVisisble(effect){
+	if(effect){
+		document.getElementById("viewport").className = "visible"; 
+		document.getElementById("viewportmaster").className = "visible"; 
+		
+	}
+
+}
+function isLoaded(cname){
+	
+	var getDivId = document.getElementById(cname);
+    var images = getDivId.getElementsByTagName("img");
+	var videos = getDivId.getElementsByTagName("video");
+	
+    for(var i=0; i<images.length; i++) {
+		//console.log(IsImageOk(images[i]));
+        if(!IsImageOk(images[i])){return false;}
+    }
+    
+	for(var i=0; i<videos.length; i++) {
+		//console.log("readyState: " + videos[i].readyState);
+        if(videos[i].readyState !=4 ){return false;}
+    }
+	
+	return true;
+
+}
+function renderType(slideJson){
+	console.log(slideJson.id);
+	console.log(slideJson.masterSlideId);
+
+}
+
+function renderMSlide(sId, prerender, effect){
+	//document.getElementById("viewportmaster").innerHTML = "";
+	document.getElementById("prerendermaster").innerHTML = "";
+	currentmasterslide = "";
+	
+	masterslides.get(sId, function(slideJson) {
+        console.log("slide: " + sId);
+		//console.log(slideJson);
+		for(i=0;i<slideJson.elements.length;i++){
+			renderElements(slideJson.elements[i], 10, true);
+		}
+			looper("prerendermaster");
+			function looper(cname){
+				//console.log("in looper for " + cname );
+				if(isLoaded(cname)){
+					document.getElementById("viewport").innerHTML = "";
+					document.getElementById("viewportmaster").innerHTML = "";
+					currentmasterslide = sId;
+					var newParent = document.getElementById('viewport');
+					var oldParent = document.getElementById('prerender');
+
+					while (oldParent.childNodes.length) {
+						newParent.appendChild(oldParent.childNodes[0]);
+					}
+	
+					newParent = document.getElementById('viewportmaster');
+					oldParent = document.getElementById('prerendermaster');
+
+					while (oldParent.childNodes.length > 0) {
+						newParent.appendChild(oldParent.childNodes[0]);
+					}
+					//for(i=0;i<slideJson.elements.length;i++){
+					//	renderElements(slideJson.elements[i], 10, false);
+					//}
+					playVideos();
+					makeVisisble(effect);
+					document.getElementById("prerendermaster").innerHTML = "";
+	
+					//console.log("return");
+					return;
+				} else {
+					setTimeout(function (){looper(cname);} , 500);
+				}
+			}
+
+		
+    });
+
+
+}
+function playVideos(){
+	var getDivId = document.getElementById('viewportmaster');
+	var videos = getDivId.getElementsByTagName("video");
+	
+	for(var i=0; i<videos.length; i++) {
+		videos[i].loop = true;
+		videos[i].autoplay = true;
+		videos[i].play();
+		// specialVideoPlay function
+	}
+
+	getDivId = document.getElementById('viewport');
+	videos = getDivId.getElementsByTagName("video");
+	
+	for(var i=0; i<videos.length; i++) {
+		videos[i].loop = true;
+		videos[i].autoplay = true;
+		videos[i].play();
+		// specialVideoPlay function
+	}
+
+}
+function renderElements(element, zi, prerender){
+	var cname;
+	if(prerender & zi==10){ cname = "prerendermaster";}
+	if(prerender & zi==20){ cname = "prerender";}
+	
+	if(!prerender & zi==10){ cname = "viewportmaster";}
+	if(!prerender & zi==20){ cname = "viewport";}
+	
+	container = document.getElementById(cname);
+	
+	//console.log(element);
+	//console.log(element.height);
+	if(element.type=="image"){
+		var DOM_img = document.createElement("img");
+		DOM_img.src = element.source;
+		DOM_img.style.left = element.left;
+		DOM_img.style.top = element.top;
+		DOM_img.style.width = element.width;
+		DOM_img.style.height = element.height;
+		DOM_img.style.position = "absolute";
+		DOM_img.style.zIndex =  zi;
+		container.appendChild(DOM_img);
+	}
+	if(element.type=="video"){
+		var DOM_vid = document.createElement("video");
+		DOM_vid.src = element.source;
+		DOM_vid.style.left = element.left;
+		DOM_vid.style.top = element.top;
+		DOM_vid.style.width = element.width;
+		DOM_vid.style.height = element.height;
+		DOM_vid.style.position = "absolute";
+		DOM_vid.style.zIndex =  zi;
+		if(!prerender) {
+			DOM_vid.autoplay = true;
+			DOM_vid.loop = true;
+		}
+		container.appendChild(DOM_vid);
+	}
+	if(element.type=="text"){
+		var DOM_txt = document.createElement("div");
+		DOM_txt.innerHTML = Encoder.htmlDecode(element.source);
+		DOM_txt.style.left = element.left;
+		DOM_txt.style.top = element.top;
+		DOM_txt.style.width = element.width;
+		DOM_txt.style.height = element.height;
+		DOM_txt.style.zIndex =  zi;
+		DOM_txt.style.position = "absolute";
+		DOM_txt.className = "text-object";
+		container.appendChild(DOM_txt);
+	}
+}
+
+function clearScreen(){
+	
+    document.getElementById("viewport").innerHTML = "";
+	document.getElementById("viewportmaster").innerHTML = "";
+	document.getElementById("prerender").innerHTML = "";
+	document.getElementById("prerendermaster").innerHTML = "";
+	currentslide = "";
+	currentmasterslide = "";
+	currentplaylist = "";
+	container = document.getElementById("viewport");
+	var DOM_txt = document.createElement("div");
+		DOM_txt.id="nocontent";
+		DOM_txt.innerHTML = "NO CONTENT";
+		DOM_txt.style.left = getRandomArbitrary(0,80)+"%";
+		DOM_txt.style.top = getRandomArbitrary(0,80)+"%";
+		DOM_txt.style.width = "20%";
+		DOM_txt.style.height = "20%";
+		DOM_txt.style.zIndex =  "20";
+		DOM_txt.style.position = "absolute";
+		container.appendChild(DOM_txt);
+		
+		
+	clearScreenTimer = setTimeout(displayNoContent, 2000);
+
+}
+
+function displayNoContent(){
+    DOM_txt = document.getElementById("nocontent");
+	DOM_txt.style.left = getRandomArbitrary(0,80)+"%";
+	DOM_txt.style.top = getRandomArbitrary(0,80)+"%";
+	clearScreenTimer = setTimeout(displayNoContent, 2000);
+
+}
+
+function IsImageOk(img) {
+    // During the onload event, IE correctly identifies any images that
+    // weren’t downloaded as not complete. Others should too. Gecko-based
+    // browsers act like NS4 in that they report this incorrectly.
+	
+	//console.log(img.complete + ":" + img.naturalWidth);
+    if (!img.complete) {
+        return false;
+    }
+
+    // However, they do have two very useful properties: naturalWidth and
+    // naturalHeight. These give the true size of the image. If it failed
+    // to load, either of these should be zero.
+
+    if (typeof img.naturalWidth !== "undefined" && img.naturalWidth === 0) {
+        return false;
+    }
+
+    // No other way of checking: assume it’s ok.
+    return true;
+}
+function getRandomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+$(document).ready(function () {
+	topContainer = $('#topContainer');
+	$(window).resize(afterBrowserResized);
+	afterBrowserResized();
+	
+});
+
+function afterBrowserResized() {
+	CANVAS_WIDTH = $(window).width();
+	CANVAS_HEIGHT = $(window).height();
+
+	if (CANVAS_HEIGHT * CANVAS_ASPECT_RATIO > CANVAS_WIDTH) {
+		CANVAS_HEIGHT = CANVAS_WIDTH / CANVAS_ASPECT_RATIO;
+	}
+	else {
+		CANVAS_WIDTH = CANVAS_HEIGHT * CANVAS_ASPECT_RATIO;
+	}
+
+	var scaleFactor = CANVAS_HEIGHT * 100 / CANVAS_O_HEIGHT;
+	$('.text-object').each(function () {
+		$(this).css('font-size', scaleFactor + '%');
+	});
+}
+
+function setOrientation(orientation) {
+
+	if (!topContainer)
+		return;
+
+	$(topContainer).removeClass('rotate90');
+	$(topContainer).removeClass('rotate180');
+	$(topContainer).removeClass('rotate270');
+
+	$(topContainer).height(CANVAS_HEIGHT);
+	$(topContainer).width(CANVAS_WIDTH);
+
+	if (orientation == 'portrait' && isFlipped) {
+		$(topContainer).addClass('rotate270');
+
+		$(topContainer).height(CANVAS_WIDTH);
+		$(topContainer).width(CANVAS_HEIGHT);
+
+		$(topContainer).css('top', $(topContainer).width() + 'px');
+
+	} else if (orientation == 'portrait' && !isFlipped) {
+		$(topContainer).addClass('rotate90');
+
+		$(topContainer).height(CANVAS_WIDTH);
+		$(topContainer).width(CANVAS_HEIGHT);
+
+		$(topContainer).css('left', $(topContainer).height() + 'px');
+
+	} else if (orientation != 'portrait' && orient.isFlipped)
+		$(topContainer).addClass('rotate180');
+}
+
+clearScreen();
+//ucThreadExec();
+updateContent('{type: "playlist",id: 12312,"transitionMode": "fade-in-out", "slides":[	{"id": 46732, "timing": 6},{"id": 234,"timing": 6}, {"id": 34,"timing": 12}]}');
+updateContent('{type: "playlist",id: 123,"transitionMode": "fade-in-out", "slides":[	{"id": 34,"timing": 5}, {"id": 46732,"timing": 5}]}');
+
+updateContent('{	"type": "schedule",	"id": 643,"playlists":[{"id": 12312,"start": {"weekDay": "thursday","time": "12:34:30 pm"},"end": {"weekDay": "thursday",						"time": "12:51:30 pm"}},{"id": 78,"start": {"weekDay": "sunday","time": "9:45:12 pm"},"end": {"weekDay": "sunday","time": "11:00:00 pm"}}]}');
+updateContent('{"type": "slide","isLandscape":false,"id": 46732,"masterSlideId": 27,"elements":[{"type": "text","left": "28.598484848484848%","top": "17.171717171717173%",		"width": "28.645833333333332%",	"height": "8.577441077441078%",	"source": "SLIDE this will be an encoded HTML </br>SLIDEID: 46732"},{"type": "image","left": "15.340909090909092%",	"top": "30.134680134680135%","width": "46.515151515151516%","height": "47.138047138047135%","source": "DSCF3352_2.jpg"},{"type": "video","left":"33.90151515151515%","top": "33.333333333333336%","width": "46.041666666666668%","height": "47.77777777777778%","source": "example.mp4"}]}');
+updateContent('{"type": "slide","id": 234,"isLandscape":false,"masterSlideId": 27,"elements":[{"type": "text","left": "28.598484848484848%","top": "17.171717171717173%",		"width": "28.645833333333332%",	"height": "8.577441077441078%",	"source": "slide 234"},{"type": "image","left": "15.340909090909092%",	"top": "30.134680134680135%","width": "46.515151515151516%","height": "47.138047138047135%","source": "DSCF3352_2.jpg"},{"type": "video","left":"3.90151515151515%","top": "3.333333333333336%","width": "76.041666666666668%","height": "77.77777777777778%","source": "example.mp4"}]}');
+updateContent('{"type": "slide","isLandscape":true,"id": 34,"elements":[{"type": "text","left": "8.598484848484848%","top": "7.171717171717173%",		"width": "28.645833333333332%",	"height": "8.577441077441078%",	"source": "&lt;span style=&quot;font-size: 680%; color: rgb(0, 0, 128); font-family: sancreekregular; background-color: rgb(255, 0, 0);&quot;&gt;San Creek&lt;/span&gt;"},{"type": "image","left": "15.340909090909092%",	"top": "30.134680134680135%","width": "46.515151515151516%","height": "47.138047138047135%","source": "DSCF3352_2.jpg"}]}');
+
+updateContent('{"type": "master-slide","id": 27,"elements":[{"type": "text","left": "18.598484848484848%","top": "7.171717171717173%",	"width":"28.645833333333332%","height": "8.577441077441078%","source": "<b>MASTER SLIDE</b> content"},{"type": "image","left": "15.340909090909092%",		"top": "30.134680134680135%","width": "26.515151515151516%","height": "47.138047138047135%","source": "DSCF3300.JPG"},{"type": "image","left": "15.340909090909092%",		"top": "60.134680134680135%","width": "26.515151515151516%","height": "47.138047138047135%","source": "DSCF3300.JPG"},{"type": "image","left": "40.340909090909092%",		"top": "30.134680134680135%","width": "26.515151515151516%","height": "47.138047138047135%","source": "DSCF3352_2.jpg"},{"type": "video","left":"0.90151515151515%","top": "33.333333333333336%","width": "26.041666666666668%","height": "27.77777777777778%","source": "example.mp4"}]}');
+
+updateContent('{"type":"slide","id":1,"isLandscape":true,"elements":[{"type":"text","left":"20.201704718849875%","top":"35.72895550968671%","width":"28.645833333333332%","height":"6.565656565656566%","source":"&lt;span style=&quot;color: rgb(255, 255, 255); font-family: eraserregular; font-size: 440%;&quot;&gt;S1&lt;/span&gt;"},{"type":"text","left":"9.469696969696969%","top":"12.962962962962964%","width":"28.645833333333332%","height":"14.141414141414142%","source":"&lt;span style=&quot;font-size: 680%; color: rgb(0, 0, 128); font-family: sancreekregular; background-color: rgb(255, 0, 0);&quot;&gt;San Creek&lt;/span&gt;"}]}');
+//setTimeout(function(){updateContent('{"type": "default","playlistId": 123}');}, 1000);
+//updateContent('{"type": "override","playlistId": 12312,"end": "09/24/2015 16:03:03"}');
+setTimeout(function(){updateContent('{type: "playlist",id: 123,"transitionMode": "fade-in-out", "slides":[	{"id": 34,"timing": 5},{"id": 46732,"timing": 5}]}');}, 10000);
+setTimeout(function(){updateContent('{type: "playlist",id: 123,"transitionMode": "fade-in-out", "slides":[	{"id": 234,"timing": 8}, {"id": 46732,"timing": 5} ]}');}, 15000);
+updateContent('{"type":"playlist","id":1,"transitionMode":"none","slides":[{"id":1,"timing":10}]}');
+//updateContent('{"type":"default","playlistId":1}');
+setTimeout(function(){updateContent('{"type":"default","playlistId":123}');}, 3000);
+
+scheduleCheckAndRun();
+
+</script>
+
+</body>
+</html>
