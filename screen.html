@@ -220,6 +220,24 @@ function updateContent(data){
 	if(!ucExec){ucThreadExec();}
 }
 
+function transferNodes(oldParent, newParent){
+		while (oldParent.childNodes.length > 0) {
+						//var tempChild = oldParent.childNodes[0];
+						//console.log(oldParent.childNodes[0].nodeName);
+						newParent.appendChild(oldParent.childNodes[0].cloneNode(true));
+						try {
+							//tempChild.src = "";
+							//console.log(" - " + oldParent.childNodes[0].nodeName);
+							try{
+								oldParent.childNodes[0].src = "";
+							} catch(err1){console.log(err1)}
+							oldParent.removeChild(oldParent.childNodes[0]);
+						} catch (err){console.log(err)}
+						
+					}
+		oldParent.innerHTML = "";
+}
+
 function scheduleCheckAndRun() {
 		var now = new Date();
 		//var d = new Date();
@@ -377,9 +395,9 @@ function renderSlide(sId, effect){
 						var newParent = document.getElementById('viewport');
 						var oldParent = document.getElementById('prerender');
 
-						while (oldParent.childNodes.length) {
-							newParent.appendChild(oldParent.childNodes[0]);
-						}
+						transferNodes(oldParent, newParent);
+						
+						document.getElementById("prerender").innerHTML = "";
 						makeVisisble(effect);
 						
 						playVideos();
@@ -452,16 +470,14 @@ function renderMSlide(sId, prerender, effect){
 					var newParent = document.getElementById('viewport');
 					var oldParent = document.getElementById('prerender');
 
-					while (oldParent.childNodes.length) {
-						newParent.appendChild(oldParent.childNodes[0]);
-					}
-	
+					transferNodes(oldParent, newParent);
+					document.getElementById('prerender').innerHTML = "";
+					
 					newParent = document.getElementById('viewportmaster');
 					oldParent = document.getElementById('prerendermaster');
 
-					while (oldParent.childNodes.length > 0) {
-						newParent.appendChild(oldParent.childNodes[0]);
-					}
+					transferNodes(oldParent, newParent);
+					
 					//for(i=0;i<slideJson.elements.length;i++){
 					//	renderElements(slideJson.elements[i], 10, false);
 					//}
@@ -592,7 +608,7 @@ function displayNoContent(){
 
 function IsImageOk(img) {
     // During the onload event, IE correctly identifies any images that
-    // weren’t downloaded as not complete. Others should too. Gecko-based
+    // werenÂ’t downloaded as not complete. Others should too. Gecko-based
     // browsers act like NS4 in that they report this incorrectly.
 	
 	//console.log(img.complete + ":" + img.naturalWidth);
@@ -608,7 +624,7 @@ function IsImageOk(img) {
         return false;
     }
 
-    // No other way of checking: assume it’s ok.
+    // No other way of checking: assume itÂ’s ok.
     return true;
 }
 function getRandomArbitrary(min, max) {
