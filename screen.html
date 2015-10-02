@@ -96,14 +96,17 @@ var defaultpl="";
 var override="";
 var currentplaylist ="";
 var currentslide="";
+var playlistcounter = 0;
 var currentmasterslide="";
 var currentschedule="";
 var slideTimer;
 var effectTimer;
 var clearScreenTimer;
 var slideCounter=0;
+var listcounter;
+var listplaystring;
 var defaultmode = false;
-var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+var days = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
 
 var CANVAS_WIDTH, CANVAS_HEIGHT;
 var CANVAS_O_WIDTH = 1920;
@@ -111,6 +114,8 @@ var CANVAS_O_HEIGHT = 1080;
 var CANVAS_ASPECT_RATIO = CANVAS_O_WIDTH / CANVAS_O_HEIGHT;
 
 var topContainer;
+
+var listplaylist = [];
 var isFlipped = false;
 
 ucArr = [];
@@ -132,8 +137,9 @@ function updateContentClass(data) {
 		
 		if(json.type == "playlist"){
 			if(json.slides){
-				playlists.save(json, function(obj){console.log(obj);
-				console.log('currentplaylist == json.id' + currentplaylist +" == "+ json.id);
+				playlists.save(json, function(obj){
+				//console.log(obj);
+				//console.log('currentplaylist == json.id' + currentplaylist +" == "+ json.id);
 				if(currentplaylist == json.id){
 					
 					renderPlayList(json);
@@ -166,6 +172,7 @@ function updateContentClass(data) {
 			if(json.playlistId) {
 				defaultpl = json;
 				if(defaultmode){
+					cleanListplaylist();
 					startPlayList(json.playlistId, 0);
 				}
 			} else {
@@ -175,6 +182,7 @@ function updateContentClass(data) {
 		}
 		if(json.type == "override"){
 		  override = json;
+		  //console.log('override.playlistId '+ override.playlistId);
 		  if(override.playlistId){
 			cleanUp();
 			currentplaylist = override.playlistId;
@@ -189,7 +197,83 @@ function updateContentClass(data) {
 
     };
 }
+function refreshPlaylistArr(){
+	cleanListplaylist();
+	var now = new Date();
+	var d =  Date.UTC(now.getUTCFullYear(),now.getUTCMonth(), now.getUTCDate() , 
+      now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
+	var day = days[now.getUTCDay()].toLowerCase();
+	
+		var month = now.getUTCMonth() + 1;
+		if (month < 10) {
+			month = "0" + month;
+		}
+		var numday = now.getUTCDate();
+		if (numday < 10) {
+			numday = "0" + numday;
+		}
+		var hr = now.getUTCHours();
+		var min = now.getUTCMinutes();
+		if (min < 10) {
+			min = "0" + min;
+		}
+		var sec = now.getUTCSeconds();
+		if (sec < 10) {
+			sec = "0" + sec;
+		}
+		var ampm = hr < 12 ? "am" : "pm";
+		var mmddyyyysec = (month) + '/' + numday + '/' +  now.getUTCFullYear() +" "+ hr + ":" + min + ":" + sec ;
+		if (hr > 12 ){
+			hr = hr-12;
+		}
+		if (hr < 10) {
+			hr = "0" + hr;
+		}
+		
+		
+		//if(hr>12){hr=hr-12};
+		var date = now.getUTCDate();
+		var format = hr+":"+min+":"+sec+" "+ampm;
+	try{
+			//console.log(schedules.playlists.length);
+			for(j=0;j<schedules.playlists.length;j++) {
+				// start
+				//console.log(day +" 	"+format) ;
+				
+				//console.log(schedules.playlists[j].start.weekDay + " " + schedules.playlists[j].start.time);
+				//console.log(now.getUTCDay() +" "+ days.indexOf(schedules.playlists[j].start.weekDay) );
+				//console.log("(now.getUTCDay() > days.indexOf(schedules.playlists[j].start.weekDay)" + (now.getUTCDay() > days.indexOf(schedules.playlists[j].start.weekDay)));
+				//console.log("(convertToTimeStamp(now.getUTCDay(), format) == convertToTimeStamp( days.indexOf(schedules.playlists[j].start.weekDay),schedules.playlists[j].start.time) || convertToTimeStamp(now.getUTCDay(), format) > convertToTimeStamp(days.indexOf(schedules.playlists[j].start.weekDay), schedules.playlists[j].start.time)) " + (convertToTimeStamp(now.getUTCDay(), format) == convertToTimeStamp( days.indexOf(schedules.playlists[j].start.weekDay),schedules.playlists[j].start.time) || convertToTimeStamp(now.getUTCDay(), format) > convertToTimeStamp(days.indexOf(schedules.playlists[j].start.weekDay), schedules.playlists[j].start.time)));
+				
+				if ((now.getUTCDay() > days.indexOf(schedules.playlists[j].start.weekDay) )|| (day === schedules.playlists[j].start.weekDay && (convertToTimeStamp(now.getUTCDay(), format) == convertToTimeStamp( days.indexOf(schedules.playlists[j].start.weekDay),schedules.playlists[j].start.time) || convertToTimeStamp(now.getUTCDay(), format) > convertToTimeStamp(days.indexOf(schedules.playlists[j].start.weekDay), schedules.playlists[j].start.time)))) {
+				    //console.log("inside first if");
+					//console.log(schedules.playlists[j].end.weekDay + " " + schedules.playlists[j].end.time);
+					//console.log(now.getUTCDay() +" "+ days.indexOf(schedules.playlists[j].end.weekDay) );
+				
+					//console.log("( now.getUTCDay() < days.indexOf(schedules.playlists[j].end.weekDay))" + ( now.getUTCDay() < days.indexOf(schedules.playlists[j].end.weekDay)));
+					var numday = days.indexOf(schedules.playlists[j].end.weekDay);
+					if(numday - now.getUTCDay() < 0) {numday = numday + 7;}
+					if(day == schedules.playlists[j].end.weekDay) {
+						if(convertToTimeStamp(now.getUTCDay() , format) < convertToTimeStamp(numday, schedules.playlists[j].end.time)) {
+							//console.log("inside second if");
+							listplaylist.push(schedules.playlists[j].id);
+						} 
+					} else {
+						// specific function call
+						//alert("start");
+						//console.log("inside second if");
+						listplaylist.push(schedules.playlists[j].id);
+					}
+				}
+			}
+		} catch (err){}
+		//console.log("listplaylist:");
+		console.log(listplaylist);
 
+}
+function cleanListplaylist(){
+	listplaylist.splice(0,listplaylist.length);
+}
 function cleanUp(){
 	currentslide = "";
 	currentmasterslide = "";
@@ -200,6 +284,7 @@ function cleanUp(){
 
 }
 function cleanUpDefault(){
+	cleanListplaylist();
 	cleanUp();
 	clearScreen();
 }
@@ -218,24 +303,6 @@ function updateContent(data){
 	ucArr[ucArr.length] = new updateContentClass(data);
 	//console.log(ucArr);
 	if(!ucExec){ucThreadExec();}
-}
-
-function transferNodes(oldParent, newParent){
-		while (oldParent.childNodes.length > 0) {
-						//var tempChild = oldParent.childNodes[0];
-						//console.log(oldParent.childNodes[0].nodeName);
-						newParent.appendChild(oldParent.childNodes[0].cloneNode(true));
-						try {
-							//tempChild.src = "";
-							//console.log(" - " + oldParent.childNodes[0].nodeName);
-							try{
-								oldParent.childNodes[0].src = "";
-							} catch(err1){console.log(err1)}
-							oldParent.removeChild(oldParent.childNodes[0]);
-						} catch (err){console.log(err)}
-						
-					}
-		oldParent.innerHTML = "";
 }
 
 function scheduleCheckAndRun() {
@@ -263,12 +330,21 @@ function scheduleCheckAndRun() {
 		}
 		var ampm = hr < 12 ? "am" : "pm";
 		var mmddyyyysec = (month) + '/' + numday + '/' +  now.getUTCFullYear() +" "+ hr + ":" + min + ":" + sec ;
+		if (hr > 12 ){
+			hr = hr-12;
+		}
+		if (hr < 10) {
+			hr = "0" + hr;
+		}
+		
 		
 		//if(hr>12){hr=hr-12};
 		var date = now.getUTCDate();
 		var format = hr+":"+min+":"+sec+" "+ampm;
+/*
 		//console.log(format);
-		try{
+		//try{
+			
 //			console.log(schedules.playlists.length);
 			for(j=0;j<schedules.playlists.length;j++) {
 				// start
@@ -279,7 +355,9 @@ function scheduleCheckAndRun() {
 					//alert("start");
 					currentschedule = schedules.playlists[j].id;
 					defaultmode = false;
-					startPlayList(schedules.playlists[j].id, 0);
+					console.log("----------: " + format + ":-----------");
+					//refreshPlaylistArr();
+					//startPlayList(schedules.playlists[j].id, 0);
 				}
 				// stop
 				if (day === schedules.playlists[j].end.weekDay && format == schedules.playlists[j].end.time) {
@@ -288,16 +366,32 @@ function scheduleCheckAndRun() {
 					currentplaylist = "";
 					currentslide = "";
 					currentschedule = "";
+					refreshPlaylistArr();
 					//alert("stop");
 				}
 			}
-		} catch (err){}
+*/
+		
+		//} catch (err){console.log(err);}
+		console.log(override);
 		if(override.playlistId){
-			//console.log("mmddyyyysec == override.end" + mmddyyyysec +" == "+ override.end)
-			if(mmddyyyysec == override.end){
+			console.log("mmddyyyysec == override.end" + mmddyyyysec +" == "+ override.end)
+			if(Date.parse(mmddyyyysec) > Date.parse(override.end)){
 				clearTimeout(slideTimer);
 				currentplaylist = "";
 				currentslide = "";
+				cleanListplaylist();
+				override = "";
+			}
+		} else {
+			refreshPlaylistArr();
+			console.log(listplaylist.toString() +"!="+ listplaystring);
+			
+			if(listplaylist.length>0 && listplaylist.toString() != listplaystring) {
+				//alert("changed schedule" + listplaylist.toString());
+				listplaystring = listplaylist.toString();
+				rotatePlArray();
+				
 			}
 		}
 		//console.log("defaultpl.length currentplaylist.length " + defaultpl.playlistId + " : " + currentplaylist.length);
@@ -306,6 +400,7 @@ function scheduleCheckAndRun() {
 			startPlayList(defaultpl.playlistId, 0);
 			
 		}
+		//console.log(format);
         // exact ms to next minute interval
         setTimeout(scheduleCheckAndRun, 1000);
 }
@@ -317,12 +412,20 @@ function startPlayList(pId, sc){
 		slideCounter=sc;
 		clearTimeout(slideTimer);
 		clearTimeout(effectTimer);
-		renderPlayList(playJson);
+		if(playJson){
+			renderPlayList(playJson);
+		}
     });
 
 
 }
 
+function rotatePlArray(){
+	//alert(listplaylist[playlistcounter]);
+	startPlayList(listplaylist[playlistcounter], 0);
+	playlistcounter++;
+	if(listplaylist.length == playlistcounter){playlistcounter=0;}
+}
 function renderPlayList(playJson){
 	clearTimeout(clearScreenTimer);
 	clearTimeout(effectTimer);
@@ -335,20 +438,29 @@ function renderPlayList(playJson){
 		}
 	}
 	if(effect){
-			effectTimer =setTimeout(function(){document.getElementById("viewport").className = "hidden";document.getElementById("viewportmaster").className = "hidden"; console.log('starting to hide');}, (playJson.slides[slideCounter].timing-2)*1000);
+			effectTimer =setTimeout(function(){document.getElementById("viewport").className = "hidden";document.getElementById("viewportmaster").className = "hidden"; /*console.log('starting to hide');*/
+			}, (playJson.slides[slideCounter].timing-2)*1000);
 
 	}
 	slides.get(playJson.slides[slideCounter].id, function(slideJson) {
 		if(slideJson){
 			renderSlide(playJson.slides[slideCounter].id, effect);
 			//console.log(playJson.slides[slideCounter].id);
-			slideTimer=setTimeout(function(){renderPlayList(playJson);}, playJson.slides[slideCounter].timing*1000);
+			var timing = playJson.slides[slideCounter].timing*1000;
+			slideTimer=setTimeout(function(){renderPlayList(playJson);}, timing);
 			slideCounter++;
-			if(slideCounter==playJson.slides.length){slideCounter=0; /*console.log("resetting");*/}
+			if(slideCounter==playJson.slides.length){
+			slideCounter=0;
+			// if schedule is playing with more number of playlists
+			if(listplaylist.length>0){
+				clearTimeout(slideTimer);
+				slideTimer=setTimeout(function(){rotatePlArray();}, timing);
+			}
+			/*console.log("resetting");*/}
 
 		} else {
 			slideCounter++;
-			if(slideCounter==playJson.slides.length){slideCounter=0; /*console.log("resetting");*/}
+			if(slideCounter==playJson.slides.length){slideCounter=0; rotatePlArray();return; /*console.log("resetting");*/}
 			renderPlayList(playJson);
 		
 		}
@@ -359,10 +471,10 @@ function renderSlide(sId, effect){
 	if(effect){
 		document.getElementById("viewport").className = "hiddenimd";document.getElementById("viewportmaster").className = "hiddenimd";
 	}
-	console.log(sId);
+	//console.log(sId);
 	slides.get(sId, function(slideJson) {
-        console.log("slide: ");
-		console.log(slideJson);
+        //console.log("slide: ");
+		//console.log(slideJson);
 		if(slideJson){
 			document.getElementById("prerender").innerHTML = "";
 			setOrientation(slideJson.isLandscape);
@@ -397,9 +509,8 @@ function renderSlide(sId, effect){
 
 						transferNodes(oldParent, newParent);
 						
-						document.getElementById("prerender").innerHTML = "";
 						makeVisisble(effect);
-						
+						document.getElementById('prerender').innerHTML = "";
 						playVideos();
 						
 						
@@ -455,7 +566,7 @@ function renderMSlide(sId, prerender, effect){
 	currentmasterslide = "";
 	
 	masterslides.get(sId, function(slideJson) {
-        console.log("slide: " + sId);
+        //console.log("slide: " + sId);
 		//console.log(slideJson);
 		for(i=0;i<slideJson.elements.length;i++){
 			renderElements(slideJson.elements[i], 10, true);
@@ -496,6 +607,24 @@ function renderMSlide(sId, prerender, effect){
     });
 
 
+}
+
+function transferNodes(oldParent, newParent){
+		while (oldParent.childNodes.length > 0) {
+						//var tempChild = oldParent.childNodes[0];
+						//console.log(oldParent.childNodes[0].nodeName);
+						newParent.appendChild(oldParent.childNodes[0].cloneNode(true));
+						try {
+							//tempChild.src = "";
+							//console.log(" - " + oldParent.childNodes[0].nodeName);
+							try{
+								oldParent.childNodes[0].src = "";
+							} catch(err1){console.log(err1)}
+							oldParent.removeChild(oldParent.childNodes[0]);
+						} catch (err){console.log(err)}
+						
+					}
+		oldParent.innerHTML = "";
 }
 function playVideos(){
 	var getDivId = document.getElementById('viewportmaster');
@@ -605,10 +734,24 @@ function displayNoContent(){
 	clearScreenTimer = setTimeout(displayNoContent, 2000);
 
 }
+function convertToTimeStamp(day, timestr){
+	return Date.parse('01/' + day + '/2000 '+ convertTo24Hour(timestr));
+}
+
+function convertTo24Hour(time) {
+    var hours = parseInt(time.substr(0, 2));
+    if(time.indexOf('am') != -1 && hours == 12) {
+        time = time.replace('12', '0');
+    }
+    if(time.indexOf('pm')  != -1 && hours < 12) {
+        time = time.replace(hours, (hours + 12));
+    }
+    return time.replace(/(am|pm)/, '');
+}
 
 function IsImageOk(img) {
     // During the onload event, IE correctly identifies any images that
-    // werent downloaded as not complete. Others should too. Gecko-based
+    // weren?t downloaded as not complete. Others should too. Gecko-based
     // browsers act like NS4 in that they report this incorrectly.
 	
 	//console.log(img.complete + ":" + img.naturalWidth);
@@ -624,7 +767,7 @@ function IsImageOk(img) {
         return false;
     }
 
-    // No other way of checking: assume its ok.
+    // No other way of checking: assume it?s ok.
     return true;
 }
 function getRandomArbitrary(min, max) {
@@ -695,11 +838,11 @@ function setIsFlipped(isIt) {
 }
 
 clearScreen();
-ucThreadExec();
+//ucThreadExec();
 updateContent('{type: "playlist",id: 12312,"transitionMode": "fade-in-out", "slides":[	{"id": 46732, "timing": 6},{"id": 234,"timing": 6}, {"id": 34,"timing": 12}]}');
 updateContent('{type: "playlist",id: 123,"transitionMode": "fade-in-out", "slides":[	{"id": 34,"timing": 5}, {"id": 46732,"timing": 5}]}');
 
-updateContent('{	"type": "schedule",	"id": 643,"playlists":[{"id": 12312,"start": {"weekDay": "thursday","time": "12:34:30 pm"},"end": {"weekDay": "thursday",						"time": "12:51:30 pm"}},{"id": 78,"start": {"weekDay": "sunday","time": "9:45:12 pm"},"end": {"weekDay": "sunday","time": "11:00:00 pm"}}]}');
+updateContent('{	"type": "schedule",	"id": 643,"playlists":[{"id": 12312,"start": {"weekDay": "wednesday","time": "12:34:30 pm"},"end": {"weekDay": "friday",						"time": "12:51:30 pm"}},{"id": 123,"start": {"weekDay": "sunday","time": "9:45:12 pm"},"end": {"weekDay": "sunday","time": "11:00:00 pm"}}]}');
 updateContent('{"type": "slide","isLandscape":false,"id": 46732,"masterSlideId": 27,"elements":[{"type": "text","left": "28.598484848484848%","top": "17.171717171717173%",		"width": "28.645833333333332%",	"height": "8.577441077441078%",	"source": "SLIDE this will be an encoded HTML </br>SLIDEID: 46732"},{"type": "image","left": "15.340909090909092%",	"top": "30.134680134680135%","width": "46.515151515151516%","height": "47.138047138047135%","source": "DSCF3352_2.jpg"},{"type": "video","left":"33.90151515151515%","top": "33.333333333333336%","width": "46.041666666666668%","height": "47.77777777777778%","source": "example.mp4"}]}');
 updateContent('{"type": "slide","id": 234,"isLandscape":false,"masterSlideId": 27,"elements":[{"type": "text","left": "28.598484848484848%","top": "17.171717171717173%",		"width": "28.645833333333332%",	"height": "8.577441077441078%",	"source": "slide 234"},{"type": "image","left": "15.340909090909092%",	"top": "30.134680134680135%","width": "46.515151515151516%","height": "47.138047138047135%","source": "DSCF3352_2.jpg"},{"type": "video","left":"3.90151515151515%","top": "3.333333333333336%","width": "76.041666666666668%","height": "77.77777777777778%","source": "example.mp4"}]}');
 updateContent('{"type": "slide","isLandscape":true,"id": 34,"elements":[{"type": "text","left": "8.598484848484848%","top": "7.171717171717173%",		"width": "28.645833333333332%",	"height": "8.577441077441078%",	"source": "&lt;span style=&quot;font-size: 680%; color: rgb(0, 0, 128); font-family: sancreekregular; background-color: rgb(255, 0, 0);&quot;&gt;San Creek&lt;/span&gt;"},{"type": "image","left": "15.340909090909092%",	"top": "30.134680134680135%","width": "46.515151515151516%","height": "47.138047138047135%","source": "DSCF3352_2.jpg"}]}');
