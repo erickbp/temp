@@ -1,5 +1,3 @@
-
-
 <html>
 <head>
     <link href="fonts/customfont.css?version=1" rel="stylesheet"/>
@@ -200,15 +198,15 @@ function updateContentClass(data) {
 function refreshPlaylistArr(){
 	cleanListplaylist();
 	var now = new Date();
-	var d =  Date.UTC(now.getUTCFullYear(),now.getUTCMonth(), now.getUTCDate() , 
+	var d =  Date.UTC(now.getUTCFullYear(),now.getUTCMonth(), now.getUTCDay() , 
       now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
 	var day = days[now.getUTCDay()].toLowerCase();
 	
-		var month = now.getUTCMonth() + 1;
+		var month = now.getUTCMonth();
 		if (month < 10) {
 			month = "0" + month;
 		}
-		var numday = now.getUTCDate();
+		var numday = now.getUTCDay();
 		if (numday < 10) {
 			numday = "0" + numday;
 		}
@@ -284,66 +282,66 @@ function updateContent(data){
 }
 
 function scheduleCheckAndRun() {
-		var now = new Date();
-		var d =  Date.UTC(now.getUTCFullYear(),now.getUTCMonth(), now.getUTCDate() , 
-      now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
-		var day = days[now.getUTCDay()].toLowerCase();
-		var month = now.getUTCMonth() + 1;
-		if (month < 10) {
-			month = "0" + month;
-		}
-		var numday = now.getUTCDate();
-		if (numday < 10) {
-			numday = "0" + numday;
-		}
-		var hr = now.getUTCHours();
-		var min = now.getUTCMinutes();
-		if (min < 10) {
-			min = "0" + min;
-		}
-		var sec = now.getUTCSeconds();
-		if (sec < 10) {
-			sec = "0" + sec;
-		}
-		var ampm = hr < 12 ? "am" : "pm";
-		var mmddyyyysec = (month) + '/' + numday + '/' +  now.getUTCFullYear() +" "+ hr + ":" + min + ":" + sec ;
-		if (hr > 12 ){
-			hr = hr-12;
-		}
-		if (hr < 10) {
-			hr = "0" + hr;
-		}
-		
-		
-		var date = now.getUTCDate();
-		var format = hr+":"+min+":"+sec+" "+ampm;
-		//console.log(override);
-		if(override.playlistId){
-			console.log("mmddyyyysec == override.end" + mmddyyyysec +" == "+ override.end)
-			if(Date.parse(mmddyyyysec) > Date.parse(override.end)){
-				clearTimeout(slideTimer);
-				currentplaylist = "";
-				currentslide = "";
-				cleanListplaylist();
-				override = "";
-			}
-		} else {
-			refreshPlaylistArr();
-			console.log(listplaylist.toString() +"!="+ listplaystring);
-			
-			if(listplaylist.length>0 && listplaylist.toString() != listplaystring) {
-				listplaystring = listplaylist.toString();
-				rotatePlArray();
-				
-			}
-		}
-		if(defaultpl.playlistId && currentplaylist.length<1){
-			defaultmode = true;
-			startPlayList(defaultpl.playlistId, 0);
-			
-		}
-        // exact ms to next minute interval
-        setTimeout(scheduleCheckAndRun, 1000);
+    var now = new Date();
+    var d = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDay(),
+        now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
+    var day = days[now.getUTCDay()].toLowerCase();
+    var month = now.getUTCMonth();
+    if (month < 10) {
+        month = "0" + month;
+    }
+    var numday = now.getUTCDay();
+    if (numday < 10) {
+        numday = "0" + numday;
+    }
+    var hr = now.getUTCHours();
+    var min = now.getUTCMinutes();
+    if (min < 10) {
+        min = "0" + min;
+    }
+    var sec = now.getUTCSeconds();
+    if (sec < 10) {
+        sec = "0" + sec;
+    }
+    var ampm = hr < 12 ? "am" : "pm";
+    var mmddyyyysec = (month) + '/' + numday + '/' + now.getUTCFullYear() + " " + hr + ":" + min + ":" + sec;
+    if (hr > 12) {
+        hr = hr - 12;
+    }
+    if (hr < 10) {
+        hr = "0" + hr;
+    }
+
+
+    var date = now.getUTCDate();
+    var format = hr + ":" + min + ":" + sec + " " + ampm;
+    //console.log(override);
+    if (override.playlistId) {
+        console.log("mmddyyyysec == override.end" + mmddyyyysec + " == " + override.end);
+        if (Date.parse(mmddyyyysec) > Date.parse(override.end)) {
+            clearTimeout(slideTimer);
+            currentplaylist = "";
+            currentslide = "";
+            cleanListplaylist();
+            override = "";
+        }
+    } else {
+        refreshPlaylistArr();
+        console.log(listplaylist.toString() + "!=" + listplaystring);
+
+        if (listplaylist.length > 0 && listplaylist.toString() != listplaystring) {
+            listplaystring = listplaylist.toString();
+            rotatePlArray();
+
+        }
+    }
+    if (defaultpl.playlistId && currentplaylist.length < 1) {
+        defaultmode = true;
+        startPlayList(defaultpl.playlistId, 0);
+
+    }
+    // exact ms to next minute interval
+    setTimeout(scheduleCheckAndRun, 1000);
 }
 
 function startPlayList(pId, sc){
