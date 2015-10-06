@@ -1,4 +1,5 @@
 
+
 <html>
 <head>
     <link href="fonts/customfont.css?version=1" rel="stylesheet"/>
@@ -119,9 +120,6 @@ var listplaylist = [];
 var isFlipped = false;
 
 ucArr = [];
-//ucArr[0] = new updateContentClass('{type: "playlist",id: 12312,"transitionMode": "fade-in-out", "slides":[	{"id": 46732, "timing": 6},{"id": 234,"timing": 6}, {"id": 34,"timing": 26}]}');
-
-//ucArr[0] = new updateContentClass('{type: "playlist",id: 12312, "slides":[	{"id": 46732, "timing": 6},{"id": 234,"timing": 6}, {"id": 34,"timing": 26}]}');
 
 
 ucExec = false;
@@ -129,17 +127,12 @@ function updateContentClass(data) {
     this.data = data;
     this.runner = function() {
         document.getElementById('console').innerHTML = document.getElementById('console').innerHTML + "</br>" + (this.data);
-		//var json = JSON.stringify(eval("(" + data + ")"));
 		var json = eval("(" + data + ")");
-		//var json = JSON.parse(data);
 		json.key = json.id;
-		//console.log(json.type);
 		
 		if(json.type == "playlist"){
 			if(json.slides){
 				playlists.save(json, function(obj){
-				//console.log(obj);
-				//console.log('currentplaylist == json.id' + currentplaylist +" == "+ json.id);
 				if(currentplaylist == json.id){
 					
 					renderPlayList(json);
@@ -182,7 +175,6 @@ function updateContentClass(data) {
 		}
 		if(json.type == "override"){
 		  override = json;
-		  //console.log('override.playlistId '+ override.playlistId);
 		  if(override.playlistId){
 			cleanUp();
 			currentplaylist = override.playlistId;
@@ -231,43 +223,24 @@ function refreshPlaylistArr(){
 		}
 		
 		
-		//if(hr>12){hr=hr-12};
 		var date = now.getUTCDate();
 		var format = hr+":"+min+":"+sec+" "+ampm;
 	try{
-			//console.log(schedules.playlists.length);
 			for(j=0;j<schedules.playlists.length;j++) {
-				// start
-				//console.log(day +" 	"+format) ;
-				
-				//console.log(schedules.playlists[j].start.weekDay + " " + schedules.playlists[j].start.time);
-				//console.log(now.getUTCDay() +" "+ days.indexOf(schedules.playlists[j].start.weekDay) );
-				//console.log("(now.getUTCDay() > days.indexOf(schedules.playlists[j].start.weekDay)" + (now.getUTCDay() > days.indexOf(schedules.playlists[j].start.weekDay)));
-				//console.log("(convertToTimeStamp(now.getUTCDay(), format) == convertToTimeStamp( days.indexOf(schedules.playlists[j].start.weekDay),schedules.playlists[j].start.time) || convertToTimeStamp(now.getUTCDay(), format) > convertToTimeStamp(days.indexOf(schedules.playlists[j].start.weekDay), schedules.playlists[j].start.time)) " + (convertToTimeStamp(now.getUTCDay(), format) == convertToTimeStamp( days.indexOf(schedules.playlists[j].start.weekDay),schedules.playlists[j].start.time) || convertToTimeStamp(now.getUTCDay(), format) > convertToTimeStamp(days.indexOf(schedules.playlists[j].start.weekDay), schedules.playlists[j].start.time)));
 				
 				if ((now.getUTCDay() > days.indexOf(schedules.playlists[j].start.weekDay) )|| (day === schedules.playlists[j].start.weekDay && (convertToTimeStamp(now.getUTCDay(), format) == convertToTimeStamp( days.indexOf(schedules.playlists[j].start.weekDay),schedules.playlists[j].start.time) || convertToTimeStamp(now.getUTCDay(), format) > convertToTimeStamp(days.indexOf(schedules.playlists[j].start.weekDay), schedules.playlists[j].start.time)))) {
-				    //console.log("inside first if");
-					//console.log(schedules.playlists[j].end.weekDay + " " + schedules.playlists[j].end.time);
-					//console.log(now.getUTCDay() +" "+ days.indexOf(schedules.playlists[j].end.weekDay) );
-				
-					//console.log("( now.getUTCDay() < days.indexOf(schedules.playlists[j].end.weekDay))" + ( now.getUTCDay() < days.indexOf(schedules.playlists[j].end.weekDay)));
 					var numday = days.indexOf(schedules.playlists[j].end.weekDay);
 					if(numday - now.getUTCDay() < 0) {numday = numday + 7;}
 					if(day == schedules.playlists[j].end.weekDay) {
 						if(convertToTimeStamp(now.getUTCDay() , format) < convertToTimeStamp(numday, schedules.playlists[j].end.time)) {
-							//console.log("inside second if");
 							listplaylist.push(schedules.playlists[j].id);
 						} 
 					} else {
-						// specific function call
-						//alert("start");
-						//console.log("inside second if");
 						listplaylist.push(schedules.playlists[j].id);
 					}
 				}
 			}
 		} catch (err){}
-		//console.log("listplaylist:");
 		console.log(listplaylist);
 
 }
@@ -295,19 +268,15 @@ function ucThreadNext() {
 }
 function ucThreadExec(){
 	ucExec = true;
-    //console.log("in exec " + ucArr.length);
 	if(ucArr.length>0){console.log("calling runner");ucArr[0].runner();} else { console.log('ucThread end'); ucExec = false;}
 }
 function updateContent(data){
-	//console.log(ucExec);
 	ucArr[ucArr.length] = new updateContentClass(data);
-	//console.log(ucArr);
 	if(!ucExec){ucThreadExec();}
 }
 
 function scheduleCheckAndRun() {
 		var now = new Date();
-		//var d = new Date();
 		var d =  Date.UTC(now.getUTCFullYear(),now.getUTCMonth(), now.getUTCDate() , 
       now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
 		var day = days[now.getUTCDay()].toLowerCase();
@@ -338,42 +307,9 @@ function scheduleCheckAndRun() {
 		}
 		
 		
-		//if(hr>12){hr=hr-12};
 		var date = now.getUTCDate();
 		var format = hr+":"+min+":"+sec+" "+ampm;
-/*
-		//console.log(format);
-		//try{
-			
-//			console.log(schedules.playlists.length);
-			for(j=0;j<schedules.playlists.length;j++) {
-				// start
-//				console.log(schedules.playlists[j].start.weekDay);
-//				console.log(format);
-				if (day === schedules.playlists[j].start.weekDay && format == schedules.playlists[j].start.time) {
-					// specific function call
-					//alert("start");
-					currentschedule = schedules.playlists[j].id;
-					defaultmode = false;
-					console.log("----------: " + format + ":-----------");
-					//refreshPlaylistArr();
-					//startPlayList(schedules.playlists[j].id, 0);
-				}
-				// stop
-				if (day === schedules.playlists[j].end.weekDay && format == schedules.playlists[j].end.time) {
-					// specific function call
-					clearTimeout(slideTimer);
-					currentplaylist = "";
-					currentslide = "";
-					currentschedule = "";
-					refreshPlaylistArr();
-					//alert("stop");
-				}
-			}
-*/
-		
-		//} catch (err){console.log(err);}
-		console.log(override);
+		//console.log(override);
 		if(override.playlistId){
 			console.log("mmddyyyysec == override.end" + mmddyyyysec +" == "+ override.end)
 			if(Date.parse(mmddyyyysec) > Date.parse(override.end)){
@@ -388,19 +324,16 @@ function scheduleCheckAndRun() {
 			console.log(listplaylist.toString() +"!="+ listplaystring);
 			
 			if(listplaylist.length>0 && listplaylist.toString() != listplaystring) {
-				//alert("changed schedule" + listplaylist.toString());
 				listplaystring = listplaylist.toString();
 				rotatePlArray();
 				
 			}
 		}
-		//console.log("defaultpl.length currentplaylist.length " + defaultpl.playlistId + " : " + currentplaylist.length);
 		if(defaultpl.playlistId && currentplaylist.length<1){
 			defaultmode = true;
 			startPlayList(defaultpl.playlistId, 0);
 			
 		}
-		//console.log(format);
         // exact ms to next minute interval
         setTimeout(scheduleCheckAndRun, 1000);
 }
@@ -421,7 +354,6 @@ function startPlayList(pId, sc){
 }
 
 function rotatePlArray(){
-	//alert(listplaylist[playlistcounter]);
 	startPlayList(listplaylist[playlistcounter], 0);
 	playlistcounter++;
 	if(listplaylist.length == playlistcounter){playlistcounter=0;}
@@ -445,7 +377,6 @@ function renderPlayList(playJson){
 	slides.get(playJson.slides[slideCounter].id, function(slideJson) {
 		if(slideJson){
 			renderSlide(playJson.slides[slideCounter].id, effect);
-			//console.log(playJson.slides[slideCounter].id);
 			var timing = playJson.slides[slideCounter].timing*1000;
 			slideTimer=setTimeout(function(){renderPlayList(playJson);}, timing);
 			slideCounter++;
@@ -456,7 +387,7 @@ function renderPlayList(playJson){
 				clearTimeout(slideTimer);
 				slideTimer=setTimeout(function(){rotatePlArray();}, timing);
 			}
-			/*console.log("resetting");*/}
+		}
 
 		} else {
 			slideCounter++;
@@ -471,32 +402,18 @@ function renderSlide(sId, effect){
 	if(effect){
 		document.getElementById("viewport").className = "hiddenimd";document.getElementById("viewportmaster").className = "hiddenimd";
 	}
-	//console.log(sId);
 	slides.get(sId, function(slideJson) {
-        //console.log("slide: ");
-		//console.log(slideJson);
 		if(slideJson){
 			document.getElementById("prerender").innerHTML = "";
 			setOrientation(slideJson.isLandscape);
-			//console.log(slideJson);
 			for(i=0;i<slideJson.elements.length;i++){
 				renderElements(slideJson.elements[i], 20, true);
 			}
 			looper("prerender");
-			
+			// looper waits for child elements to load
 			function looper(cname){
-				//console.log("in looper for " + cname );
 				if(isLoaded(cname)){
 					currentslide = sId;
-					/*
-					for(i=0;i<slideJson.elements.length;i++){
-						renderElements(slideJson.elements[i], 20, false);
-					}
-					*/
-					//if(effect){
-					//	document.getElementById("viewport").className = "visible"; 
-					//}
-					//document.getElementById("prerender").innerHTML = "";
 					
 					if(slideJson.masterSlideId){
 						renderMSlide(slideJson.masterSlideId, true, effect);
@@ -516,7 +433,6 @@ function renderSlide(sId, effect){
 						
 						
 					}
-					//console.log("return");
 					return;
 				} else {
 					setTimeout(function (){looper(cname);} , 100);
@@ -542,12 +458,10 @@ function isLoaded(cname){
 	var videos = getDivId.getElementsByTagName("video");
 	
     for(var i=0; i<images.length; i++) {
-		//console.log(IsImageOk(images[i]));
         if(!IsImageOk(images[i])){return false;}
     }
     
 	for(var i=0; i<videos.length; i++) {
-		//console.log("readyState: " + videos[i].readyState);
         if(videos[i].readyState !=4 ){return false;}
     }
 	
@@ -561,19 +475,16 @@ function renderType(slideJson){
 }
 
 function renderMSlide(sId, prerender, effect){
-	//document.getElementById("viewportmaster").innerHTML = "";
 	document.getElementById("prerendermaster").innerHTML = "";
 	currentmasterslide = "";
 	
 	masterslides.get(sId, function(slideJson) {
-        //console.log("slide: " + sId);
-		//console.log(slideJson);
 		for(i=0;i<slideJson.elements.length;i++){
 			renderElements(slideJson.elements[i], 10, true);
 		}
 			looper("prerendermaster");
+			// looper waits for child elements to load
 			function looper(cname){
-				//console.log("in looper for " + cname );
 				if(isLoaded(cname)){
 					document.getElementById("viewport").innerHTML = "";
 					document.getElementById("viewportmaster").innerHTML = "";
@@ -589,14 +500,10 @@ function renderMSlide(sId, prerender, effect){
 
 					transferNodes(oldParent, newParent);
 					
-					//for(i=0;i<slideJson.elements.length;i++){
-					//	renderElements(slideJson.elements[i], 10, false);
-					//}
 					playVideos();
 					makeVisisble(effect);
 					document.getElementById("prerendermaster").innerHTML = "";
 	
-					//console.log("return");
 					return;
 				} else {
 					setTimeout(function (){looper(cname);} , 500);
@@ -611,12 +518,8 @@ function renderMSlide(sId, prerender, effect){
 
 function transferNodes(oldParent, newParent){
 		while (oldParent.childNodes.length > 0) {
-						//var tempChild = oldParent.childNodes[0];
-						//console.log(oldParent.childNodes[0].nodeName);
 						newParent.appendChild(oldParent.childNodes[0].cloneNode(true));
 						try {
-							//tempChild.src = "";
-							//console.log(" - " + oldParent.childNodes[0].nodeName);
 							try{
 								oldParent.childNodes[0].src = "";
 							} catch(err1){console.log(err1)}
@@ -750,11 +653,7 @@ function convertTo24Hour(time) {
 }
 
 function IsImageOk(img) {
-    // During the onload event, IE correctly identifies any images that
-    // weren?t downloaded as not complete. Others should too. Gecko-based
-    // browsers act like NS4 in that they report this incorrectly.
-	
-	//console.log(img.complete + ":" + img.naturalWidth);
+    //console.log(img.complete + ":" + img.naturalWidth);
     if (!img.complete) {
         return false;
     }
