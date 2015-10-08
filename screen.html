@@ -236,13 +236,25 @@ function refreshPlaylistArr(){
 				
 				if ((now.getUTCDay() > days.indexOf(schedules.playlists[j].start.weekDay) )|| (day === schedules.playlists[j].start.weekDay && (convertToTimeStamp(now.getUTCDay(), format) == convertToTimeStamp( days.indexOf(schedules.playlists[j].start.weekDay),schedules.playlists[j].start.time) || convertToTimeStamp(now.getUTCDay(), format) > convertToTimeStamp(days.indexOf(schedules.playlists[j].start.weekDay), schedules.playlists[j].start.time)))) {
 					var numday = days.indexOf(schedules.playlists[j].end.weekDay);
+					/*
 					if(numday - now.getUTCDay() < 0) {numday = numday + 7;}
 					if(day == schedules.playlists[j].end.weekDay) {
 						if(convertToTimeStamp(now.getUTCDay() , format) < convertToTimeStamp(numday, schedules.playlists[j].end.time)) {
+							//console.log("inside second if");
 							listplaylist.push(schedules.playlists[j].id);
 						} 
 					} else {
+						// specific function call
+						//alert("start");
+						//console.log("inside second if");
 						listplaylist.push(schedules.playlists[j].id);
+					} */
+					console.log("numday == now.getUTCDay() || numday < now.getUTCDay()" + (numday == now.getUTCDay()) +"||"+ (numday < now.getUTCDay()));
+					if(numday == now.getUTCDay() || numday > now.getUTCDay() ) {
+						if(convertToTimeStamp(now.getUTCDay() , format) < convertToTimeStamp(numday, schedules.playlists[j].end.time)) {
+							console.log("inside second if");
+							listplaylist.push(schedules.playlists[j].id);
+						} 
 					}
 				}
 			}
@@ -329,11 +341,17 @@ function scheduleCheckAndRun() {
         refreshPlaylistArr();
         console.log(listplaylist.toString() + "!=" + listplaystring);
 
-        if (listplaylist.length > 0 && listplaylist.toString() != listplaystring) {
-            listplaystring = listplaylist.toString();
-            rotatePlArray();
-
-        }
+        
+	if(listplaylist.toString() != listplaystring) {
+		if(listplaylist.length>0 ){
+		//alert("changed schedule" + listplaylist.toString());
+			listplaystring = listplaylist.toString();
+			rotatePlArray();
+		} else {
+			currentplaylist = "";
+		}
+				
+	} 
     }
     if (defaultpl.playlistId && currentplaylist.length < 1) {
         defaultmode = true;
