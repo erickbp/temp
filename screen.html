@@ -332,7 +332,7 @@ function scheduleCheckAndRun() {
     var d = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDay(),
         now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
     var day = days[now.getUTCDay()].toLowerCase();
-    var month = now.getUTCMonth();
+    var month = now.getUTCMonth() + 1;
     if (month < 10) {
         month = "0" + month;
     }
@@ -350,23 +350,25 @@ function scheduleCheckAndRun() {
         sec = "0" + sec;
     }
     var ampm = hr < 12 ? "am" : "pm";
-    mmddyyyysec = (month) + '/' + numday + '/' + now.getUTCFullYear() + " " + hr + ":" + min + ":" + sec;
+    //mmddyyyysec = (month) + '/' + numday + '/' + now.getUTCFullYear() + " " + hr + ":" + min + ":" + sec;
     if (hr > 12) {
         hr = hr - 12;
     }
     if (hr < 10) {
         hr = "0" + hr;
     }
+    mmddyyyysec = (month) + '/' + numday + '/' + now.getUTCFullYear() + " " + hr + ":" + min + ":" + sec;
 
 
     var date = now.getUTCDate();
     var format = hr + ":" + min + ":" + sec + " " + ampm;
 	//console.log(override);
-    //console.log("mmddyyyysec == override.end" + mmddyyyysec + " == " + override.end + " mode: " + overridemode);
+    console.log("mmddyyyysec == override.end" + mmddyyyysec + " == " + override.end + " mode: " + overridemode);
 	if(override.playlistId && (Date.parse(mmddyyyysec) > Date.parse(override.end))){
 		if(overridemode){
 			//console.log("mmddyyyysec == override.end" + mmddyyyysec + " == " + override.end);
 			clearTimeout(slideTimer);
+			clearTimeout(effectTimer);
 			currentplaylist = "";
 			currentslide = "";
 			overridemode = false;
@@ -810,36 +812,22 @@ function setIsFlipped(isIt) {
 }
 
 clearScreen();
-//ucThreadExec();
-updateContent('{type: "playlist",id: 12312,"transitionMode": "fade-in-out", "slides":[	{"id": 46732, "timing": 6},{"id": 234,"timing": 6}, {"id": 34,"timing": 12}]}');
-updateContent('{type: "playlist",id: 123,"transitionMode": "fade-in-out", "slides":[	{"id": 34,"timing": 5}, {"id": 46732,"timing": 5}]}');
 
-updateContent('{	"type": "schedule",	"id": 643,"playlists":[{"id": 2,"start": {"weekDay": "wednesday","time": "12:34:30 pm"},"end": {"weekDay": "friday",						"time": "12:30:30 pm"}},{"id": 123,"start": {"weekDay": "sunday","time": "9:45:12 pm"},"end": {"weekDay": "sunday","time": "11:00:00 pm"}}]}');
-updateContent('{"type": "slide","isLandscape":false,"id": 46732,"masterSlideId": 27,"elements":[{"type": "text","left": "28.598484848484848%","top": "17.171717171717173%",		"width": "28.645833333333332%",	"height": "8.577441077441078%",	"source": "SLIDE this will be an encoded HTML </br>SLIDEID: 46732"},{"type": "image","left": "15.340909090909092%",	"top": "30.134680134680135%","width": "46.515151515151516%","height": "47.138047138047135%","source": "DSCF3352_2.jpg"},{"type": "video","left":"33.90151515151515%","top": "33.333333333333336%","width": "46.041666666666668%","height": "47.77777777777778%","source": "example.mp4"}]}');
+updateContent('{type: "playlist",id: 12312,"transitionMode": "fade-in-out", "slides":[	{"id": 46732, "timing": 6},{"id":234,"timing": 6}, {"id":34,"timing":12}]}');
+updateContent('{type: "playlist",id: 123,"transitionMode": "fade-in-out", "slides":[	{"id": 34,"timing": 9}, {"id": 46732,"timing": 9}]}');
+
+updateContent('{"type": "slide","isLandscape":false,"id": 46732,"masterSlideId": 27,"elements":[{"type": "text","left":"28.598484848484848%","top": "17.171717171717173%",		"width": "28.645833333333332%",	"height": "8.577441077441078%",	"source": "SLIDE this will be an encoded HTML </br>SLIDEID: 46732"},{"type": "image","left": "15.340909090909092%",	"top": "30.134680134680135%","width": "46.515151515151516%","height": "47.138047138047135%","source": "DSCF3352_2.jpg"},{"type": "video","left":"33.90151515151515%","top": "33.333333333333336%","width": "46.041666666666668%","height": "47.77777777777778%","source": "example.mp4"}]}');
 updateContent('{"type": "slide","id": 234,"isLandscape":false,"masterSlideId": 27,"elements":[{"type": "text","left": "28.598484848484848%","top": "17.171717171717173%",		"width": "28.645833333333332%",	"height": "8.577441077441078%",	"source": "slide 234"},{"type": "image","left": "15.340909090909092%",	"top": "30.134680134680135%","width": "46.515151515151516%","height": "47.138047138047135%","source": "DSCF3352_2.jpg"},{"type": "video","left":"3.90151515151515%","top": "3.333333333333336%","width": "76.041666666666668%","height": "77.77777777777778%","source": "example.mp4"}]}');
 updateContent('{"type": "slide","isLandscape":true,"id": 34,"elements":[{"type": "text","left": "8.598484848484848%","top": "7.171717171717173%",		"width": "28.645833333333332%",	"height": "8.577441077441078%",	"source": "&lt;span style=&quot;font-size: 680%; color: rgb(0, 0, 128); font-family: sancreekregular; background-color: rgb(255, 0, 0);&quot;&gt;San Creek&lt;/span&gt;"},{"type": "image","left": "15.340909090909092%",	"top": "30.134680134680135%","width": "46.515151515151516%","height": "47.138047138047135%","source": "DSCF3352_2.jpg"}]}');
 
 updateContent('{"type": "master-slide","id": 27,"elements":[{"type": "text","left": "18.598484848484848%","top": "7.171717171717173%",	"width":"28.645833333333332%","height": "8.577441077441078%","source": "<b>MASTER SLIDE</b> content"},{"type": "image","left": "15.340909090909092%",		"top": "30.134680134680135%","width": "26.515151515151516%","height": "47.138047138047135%","source": "DSCF3300.JPG"},{"type": "image","left": "15.340909090909092%",		"top": "60.134680134680135%","width": "26.515151515151516%","height": "47.138047138047135%","source": "DSCF3300.JPG"},{"type": "image","left": "40.340909090909092%",		"top": "30.134680134680135%","width": "26.515151515151516%","height": "47.138047138047135%","source": "DSCF3352_2.jpg"},{"type": "video","left":"0.90151515151515%","top": "33.333333333333336%","width": "26.041666666666668%","height": "27.77777777777778%","source": "example.mp4"}]}');
 
-updateContent('{"type":"slide","id":1,"isLandscape":true,"elements":[{"type":"text","left":"20.201704718849875%","top":"35.72895550968671%","width":"28.645833333333332%","height":"6.565656565656566%","source":"&lt;span style=&quot;color: rgb(255, 255, 255); font-family: eraserregular; font-size: 440%;&quot;&gt;S1&lt;/span&gt;"},{"type":"text","left":"9.469696969696969%","top":"12.962962962962964%","width":"28.645833333333332%","height":"14.141414141414142%","source":"&lt;span style=&quot;font-size: 680%; color: rgb(0, 0, 128); font-family: sancreekregular; background-color: rgb(255, 0, 0);&quot;&gt;San Creek&lt;/span&gt;"}]}');
-updateContent('{"type":"slide","id":2,"isLandscape":true,"elements":[{"type":"text","left":"20.201704718849875%","top":"35.72895550968671%","width":"28.645833333333332%","height":"6.565656565656566%","source":"&lt;span style=&quot;color: rgb(255, 255, 255); font-family: eraserregular; font-size: 440%;&quot;&gt;S1&lt;/span&gt;"},{"type":"text","left":"9.469696969696969%","top":"12.962962962962964%","width":"28.645833333333332%","height":"14.141414141414142%","source":"&lt;span style=&quot;font-size: 680%; color: rgb(0, 0, 128); font-family: sancreekregular; background-color: rgb(255, 0, 0);&quot;&gt;Slide2&lt;/span&gt;"}]}');
-//setTimeout(function(){updateContent('{"type": "default","playlistId": 123}');}, 1000);
-//updateContent('{"type": "override","playlistId": 12312,"end": "09/24/2015 16:03:03"}');
-setTimeout(function(){updateContent('{type: "playlist",id: 123,"transitionMode": "fade-in-out", "slides":[	{"id": 34,"timing": 5},{"id": 46732,"timing": 5}]}');}, 10000);
-setTimeout(function(){updateContent('{type: "playlist",id: 123,"transitionMode": "none", "slides":[	{"id": 234,"timing": 8}, {"id": 46732,"timing": 5} ]}');}, 18000);
-updateContent('{"type":"playlist","id":1,"transitionMode":"none","slides":[{"id":1,"timing":10}]}');
-updateContent('{"type":"playlist","id":2,"transitionMode":"none","slides":[{"id":2,"timing":5}]}');
+updateContent('{"type":"slide","id":1,"isLandscape":true,"elements": [{"type":"text","left":"20.201704718849875%","top":"35.72895550968671%","width":"28.645833333333332%","height":"6.565656565656566%","source":"&lt;span style=&quot;color: rgb(255, 255, 255); font-family: eraserregular; font-size: 440%;&quot;&gt;S1&lt;/span&gt;"},{"type":"text","left":"9.469696969696969%","top":"12.962962962962964%","width":"28.645833333333332%","height":"14.141414141414142%","source":"&lt;span style=&quot;font-size: 680%; color: rgb(0, 0, 128); font-family: sancreekregular; background-color: rgb(255, 0, 0);&quot;&gt;San Creek&lt;/span&gt;"}]}');
+updateContent('{"type":"slide","id":2,"isLandscape":true,"elements":[{"type":"text","left":"20.201704718849875%","top":"35.72895550968671%","width":"28.645833333333332%","height":"6.565656565656566%","source":"&lt;span style=&quot;color: rgb(255, 255, 255); font-family: eraserregular; font-size: 440%;&quot;&gt;S1&lt;/span&gt;"},{"type":"text","left":"9.469696969696969%","top":"12.962962962962964%","width":"28.645833333333332%","height":"14.141414141414142%","source":"&lt;span style=&quot;font-size: 680%; color: rgb(0, 0, 128); font-family: sancreekregular; background-color: rgb(255, 0,0);&quot;&gt;Slide2&lt;/span&gt;"}]}');
 
-//updateContent('{"type":"default","playlistId":1}');
-    setTimeout(function(){updateContent('{"type":"default","playlistId":123}');}, 3000);
-    setTimeout(function(){updateContent('{"type":"override","playlistId":12312, "end":"09/05/2015 12:50:00"}');}, 5000);
-	setTimeout(function(){updateContent('{"type":"override", "end":"09/05/2015 11:60:00"}');}, 23000);
-	//setTimeout(function(){updateContent('{"type":"default"}');}, 13000);
-    
 
-//updateContent('{"type":"slide","id":1,"isLandscape":true,"elements":[{"type":"text", "left":"20.201704718849875%","top":"35.72895550968671%","width":"28.645833333333332%","height":"6.565656565656566%","source":"&lt;span style=&quot;color: rgb(255, 255, 255); font-family: eraserregular; font-size: 440%;&quot;&gt;S1&lt;/span&gt;"},{"type":"text","left":"9.469696969696969%","top":"12.962962962962964%","width":"28.645833333333332%","height":"14.141414141414142%","source":"&lt;span style=&quot;font-size: 680%; color: rgb(0, 0, 128); font-family: sancreekregular; background-color: rgb(255, 0, 0);&quot;&gt;San Creek&lt;/span&gt;"}]}');
-//updateContent('{"type":"playlist","id":1,"transitionMode":"none","slides":[{"id":1,"timing":10}]}');
-//updateContent('{"type":"default","playlistId":1}');
+updateContent('{"type":"override","playlistId":123,"end": "10/05/2015 07:13:03"}');
+
 
 scheduleCheckAndRun();
 
