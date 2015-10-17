@@ -94,7 +94,20 @@
 <div id="console" style="display:none">Console:</div>
 
 <script>
-var people = new Lawnchair({name: "people"}, function(){});
+//OSSNH
+//ONS
+//JGD
+Lawnchair(function() {
+         this.nuke();
+        console.log("nuked");
+	});
+	
+Lawnchair( function() {
+this.keys( function(key) {
+this.remove(key);})
+});
+
+window.localStorage.clear();
 
 var slides = new Lawnchair({name: "slides"}, function(){});
 
@@ -108,6 +121,7 @@ var override="";
 var currentplaylist ="";
 var currentslide="";
 var playlistcounter = 0;
+var globalPlayJson;
 var currentmasterslide="";
 var currentschedule="";
 var slideTimer;
@@ -138,12 +152,18 @@ ucExec = false;
 function updateContentClass(data) {
     this.data = data;
     this.runner = function() {
+	    
         document.getElementById('console').innerHTML = document.getElementById('console').innerHTML + "</br>" + (this.data);
+		
 		var json = eval("(" + data + ")");
+		console.log("updateContent");
+		console.log(json);
 		json.key = json.id;
 		
 		if(json.type == "playlist"){
+			//console.log('in pl add ' + json.id);
 			if(json.slides){
+				//console.log('pl slides found');
 				playlists.save(json, function(obj){
 				if(currentplaylist == json.id){
 					
@@ -152,21 +172,41 @@ function updateContentClass(data) {
 				ucThreadNext();});
 				
 			} else {
-				playlist.remove(json.key, function(){ console.log('removed'); });
+				playlists.remove(json.key, function(){  console.log('removed');ucThreadNext(); });
 			}
 		}
 		if(json.type == "slide"){
 			if(json.elements){
 				slides.save(json, function(obj){console.log(obj);ucThreadNext();});
 			} else {
-				slides.remove(json.key, function(){ console.log('removed'); });
+				slides.save(json, function(obj){console.log(obj);
+					//console.log(json.key);
+					//alert("slides."+json.key);
+					//window.localStorage.clear("slides."+json.key);
+					
+				slides.remove(json.key + "", function(){ console.log('removed slide') });
+				if(currentslide == json.key) {
+					//slideCounter++;
+					//console.log("slideCounter==globalPlayJson.slides.length"+slideCounter+"=="+globalPlayJson.slides.length);
+				    //alert('same slide');
+					
+					//if(slideCounter==globalPlayJson.slides.length){slideCounter=0;alert("counter 0"); rotatePlArray();return; /*console.log("resetting");*/}
+					renderPlayList(globalPlayJson);
+					
+				}
+				ucThreadNext();
+				});
+				
+
 			}
 		}
 		if(json.type == "master-slide"){
+			//console.log(json);
+			masterslides.save(json, function(obj){console.log(obj);ucThreadNext();});
 			if(json.elements){
 				masterslides.save(json, function(obj){console.log(obj);ucThreadNext();});
 			} else {
-				masterslides.remove(json.key, function(){ console.log('removed'); });
+				masterslides.remove(json.key + "", function(){ console.log('removed mslide');ucThreadNext(); });
 			}
 		}
 		if(json.type == "schedule"){
@@ -323,6 +363,7 @@ function ucThreadExec(){
 	if(ucArr.length>0){console.log("calling runner");ucArr[0].runner();} else { console.log('ucThread end'); ucExec = false;}
 }
 function updateContent(data){
+	console.log('uc : '+ ucArr.length + 'ucExec' + ucExec);
 	ucArr[ucArr.length] = new updateContentClass(data);
 	if(!ucExec){ucThreadExec();}
 }
@@ -363,7 +404,7 @@ function scheduleCheckAndRun() {
     var date = now.getUTCDate();
     var format = hr + ":" + min + ":" + sec + " " + ampm;
 	//console.log(override);
-    console.log("mmddyyyysec == override.end" + mmddyyyysec + " == " + override.end + " mode: " + overridemode);
+    //console.log("mmddyyyysec == override.end" + mmddyyyysec + " == " + override.end + " mode: " + overridemode);
 	if(override.playlistId && (Date.parse(mmddyyyysec) > Date.parse(override.end))){
 		if(overridemode){
 			//console.log("mmddyyyysec == override.end" + mmddyyyysec + " == " + override.end);
@@ -411,14 +452,17 @@ function scheduleCheckAndRun() {
 }
 
 function startPlayList(pId, sc){
+	//console.log("playlist: " + pId);
 	playlists.get(pId, function(playJson) {
-        //console.log("playlist: " + pId);
+		//console.log(playJson);
 		//console.log(playJson.slides.length);
 		slideCounter=sc;
 		clearTimeout(slideTimer);
 		clearTimeout(effectTimer);
-		if(playJson){
+		if(playJson && playJson.slides){
 			renderPlayList(playJson);
+		} else {
+			rotatePlArray();
 		}
     });
 
@@ -426,15 +470,21 @@ function startPlayList(pId, sc){
 }
 
 function rotatePlArray(){
+	//alert('rotate pl array');
+	//console.log(listplaylist);
+	//console.log(playlistcounter);
 	startPlayList(listplaylist[playlistcounter], 0);
 	playlistcounter++;
 	if(listplaylist.length == playlistcounter){playlistcounter=0;}
 }
 function renderPlayList(playJson){
+	//alert("render playlist");
+	//console.log(playJson);
 	clearTimeout(clearScreenTimer);
 	clearTimeout(effectTimer);
 	clearTimeout(slideTimer);
 	currentplaylist=playJson.id;
+	globalPlayJson = playJson;
 	var effect = false;
 	if(playJson.transitionMode){
 		if(playJson.transitionMode == "fade-in-out"){
@@ -447,23 +497,32 @@ function renderPlayList(playJson){
 
 	}
 	slides.get(playJson.slides[slideCounter].id, function(slideJson) {
-		if(slideJson){
+		if(slideJson && slideJson.elements){
 			renderSlide(playJson.slides[slideCounter].id, effect);
 			var timing = playJson.slides[slideCounter].timing*1000;
-			slideTimer=setTimeout(function(){renderPlayList(playJson);}, timing);
+			slideTimer=setTimeout(function(){console.log('slide timer');renderPlayList(playJson);}, timing);
 			slideCounter++;
 			if(slideCounter==playJson.slides.length){
 			slideCounter=0;
 			// if schedule is playing with more number of playlists
-			if(listplaylist.length>0){
-				clearTimeout(slideTimer);
-				slideTimer=setTimeout(function(){rotatePlArray();}, timing);
+				if(listplaylist.length>0){
+					clearTimeout(slideTimer);
+					slideTimer=setTimeout(function(){rotatePlArray();}, timing);
+				}
 			}
-		}
 
 		} else {
+			//alert("slide not found " + slideCounter);
 			slideCounter++;
-			if(slideCounter==playJson.slides.length){slideCounter=0; rotatePlArray();return; /*console.log("resetting");*/}
+			if(slideCounter==playJson.slides.length){
+				slideCounter=0; 
+				if(listplaylist.length>0){
+					rotatePlArray();
+					return;
+				} 
+				 
+				
+			}
 			renderPlayList(playJson);
 		
 		}
@@ -477,7 +536,8 @@ function renderSlide(sId, effect){
 		document.getElementById("viewport").className = "visibleimd";document.getElementById("viewportmaster").className = "visibleimd";
 	}
 	slides.get(sId, function(slideJson) {
-		if(slideJson){
+		if(slideJson && slideJson.elements){
+			//console.log(slideJson);
 			document.getElementById("prerender").innerHTML = "";
 			setOrientation(slideJson.isLandscape);
 			for(i=0;i<slideJson.elements.length;i++){
@@ -513,7 +573,7 @@ function renderSlide(sId, effect){
 				}
 			}
 			
-		}
+		} else {document.getElementById("viewport").innerHTML = "";	document.getElementById("viewportmaster").innerHTML = "";}
     });
 
 }
@@ -553,6 +613,8 @@ function renderMSlide(sId, prerender, effect){
 	currentmasterslide = "";
 	
 	masterslides.get(sId, function(slideJson) {
+	if(slideJson && slideJson.elements.length>0){
+		//console.log(slideJson);
 		for(i=0;i<slideJson.elements.length;i++){
 			renderElements(slideJson.elements[i], 10, true);
 		}
@@ -583,7 +645,7 @@ function renderMSlide(sId, prerender, effect){
 					setTimeout(function (){looper(cname);} , 500);
 				}
 			}
-
+		}
 		
     });
 
@@ -815,7 +877,33 @@ function setIsFlipped(isIt) {
 }
 
 clearScreen();
+/*
+updateContent('{"type":"slide","id":12,"isLandscape":true,"elements":[{"type":"text","left":"11.079545454545455%","top":"28.956228956228955%","width":"80.82386363636364%","height":"39.225589225589225%","source":"&lt;span style=&quot;font-size: 1880%; color: rgb(0, 0, 128); font-family: sancreekregular; background-color: rgb(255, 165, 0);&quot;&gt;I am Slide 1&lt;\/span&gt;"}]}');
 
+updateContent('{"type":"playlist","id":1,"transitionMode":"none","slides":[{"id":12,"timing":10}]}');
+
+updateContent('{"type":"default","playlistId":1}');
+updateContent('{"type":"slide","id":9,"isLandscape":true,"elements":[{"type":"text","left":"11.079545454545455%","top":"28.956228956228955%","width":"80.82386363636364%","height":"39.225589225589225%","source":"&lt;span style=&quot;font-size: 1880%; color: rgb(0, 0, 128); font-family: sancreekregular; background-color: rgb(255, 165, 0);&quot;&gt;I am Slide 3&lt;\/span&gt;"}]}');
+updateContent('{"type":"slide","id":9,"isLandscape":true,"elements":[{"type":"text","left":"11.711172624067826%","top":"22.306397306397326%","width":"71.51231476754853%","height":"55.55555555555556%","source":"&lt;span style=&quot;font-size: 1880%; color: rgb(0, 0, 128); font-family: sancreekregular; background-color: rgb(255, 165, 0);&quot;&gt;I am Slide 2&lt;\/span&gt;"}]}');
+updateContent('{"type":"playlist","id":2,"transitionMode":"none","slides":[{"id":9,"timing":9}]}');
+updateContent('{"type":"default","playlistId":2}');
+
+//setTimeout(function() {updateContent('{"type":"playlist","id":3,"transitionMode":"none","slides":[{"id":9,"timing":9}]}')}, 2000);
+//setTimeout(function() {updateContent('{"type":"default","playlistId":3}')}, 2000)
+
+
+
+
+updateContent('{"type":"playlist","id":1}');
+
+
+updateContent('{"type":"slide","id":12}');
+updateContent('{"type":"slide","id":12,"isLandscape":true,"elements":[{"type":"text","left":"11.079545454545455%","top":"28.956228956228955%","width":"80.82386363636364%","height":"39.225589225589225%","source":"&lt;span style=&quot;font-size: 1880%; color: rgb(0, 0, 128); font-family: sancreekregular; background-color: rgb(255, 165, 0);&quot;&gt;I am Slide 1&lt;\/span&gt;"}]}');
+
+updateContent('{"type":"playlist","id":1,"transitionMode":"none","slides":[{"id":12,"timing":10}]}');
+
+updateContent('{"type":"default","playlistId":1}');
+*/
 updateContent('{type: "playlist",id: 12312,"transitionMode": "fade-in-out", "slides":[	{"id": 46732, "timing": 6},{"id": 234,"timing": 6}, {"id": 34,"timing": 12}]}');
 updateContent('{type: "playlist",id: 123,"transitionMode": "fade-in-out", "slides":[	{"id": 34,"timing": 5}, {"id": 46732,"timing": 5}]}');
 
@@ -831,7 +919,10 @@ updateContent('{"type":"slide","id":2,"isLandscape":true,"elements":[{"type":"te
 
 updateContent('{"type":"default","playlistId":123}');
 
+setTimeout(function() {updateContent('{"type": "slide","isLandscape":false,"id": 46732,"masterSlideId": 27}');}, 7000);
+
 scheduleCheckAndRun();
+
 
 </script>
 
