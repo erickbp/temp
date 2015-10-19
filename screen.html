@@ -294,7 +294,7 @@ function refreshPlaylistArr(){
 			sec = "0" + sec;
 		}
 		var ampm = hr < 12 ? "am" : "pm";
-		var mmddyyyysec = (month) + '/' + numday + '/' +  now.getUTCFullYear() +" "+ hr + ":" + min + ":" + sec ;
+		//var mmddyyyysec = (month) + '/' + numday + '/' +  now.getUTCFullYear() +" "+ hr + ":" + min + ":" + sec ;
 		if (hr > 12 ){
 			hr = hr-12;
 		}
@@ -377,7 +377,7 @@ function scheduleCheckAndRun() {
     if (month < 10) {
         month = "0" + month;
     }
-    var numday = now.getUTCDay();
+    var numday = now.getUTCDate();
     if (numday < 10) {
         numday = "0" + numday;
     }
@@ -500,7 +500,7 @@ function renderPlayList(playJson){
 		if(slideJson && slideJson.elements){
 			renderSlide(playJson.slides[slideCounter].id, effect);
 			var timing = playJson.slides[slideCounter].timing*1000;
-			slideTimer=setTimeout(function(){console.log('slide timer');renderPlayList(playJson);}, timing);
+			slideTimer=setTimeout(function(){renderPlayList(playJson);}, timing);
 			slideCounter++;
 			if(slideCounter==playJson.slides.length){
 			slideCounter=0;
@@ -904,6 +904,8 @@ updateContent('{"type":"playlist","id":1,"transitionMode":"none","slides":[{"id"
 
 updateContent('{"type":"default","playlistId":1}');
 */
+
+/*
 updateContent('{type: "playlist",id: 12312,"transitionMode": "fade-in-out", "slides":[	{"id": 46732, "timing": 6},{"id": 234,"timing": 6}, {"id": 34,"timing": 12}]}');
 updateContent('{type: "playlist",id: 123,"transitionMode": "fade-in-out", "slides":[	{"id": 34,"timing": 5}, {"id": 46732,"timing": 5}]}');
 
@@ -920,6 +922,44 @@ updateContent('{"type":"slide","id":2,"isLandscape":true,"elements":[{"type":"te
 updateContent('{"type":"default","playlistId":123}');
 
 setTimeout(function() {updateContent('{"type": "slide","isLandscape":false,"id": 46732,"masterSlideId": 27}');}, 7000);
+
+*/
+
+updateContent('{"type": "slide","isLandscape":true,"id": 134,"elements":[{"type": "text","left": "18.598484848484848%","top": "7.171717171717173%", "width": "28.645833333333332%", "height": "8.577441077441078%", "source": "&lt;span style=&quot;font-size: 680%; color: rgb(0, 0, 128); font-family: sancreekregular; background-color: rgb(255, 0, 0);&quot;&gt;Slide 134&lt;/span&gt;"},{"type": "image","left": "15.340909090909092%", "top": "30.134680134680135%","width": "46.515151515151516%","height": "47.138047138047135%","source": "DSCF3352_2.jpg"}]}');
+
+updateContent('{"type": "slide","isLandscape":true,"id": 135,"elements":[{"type": "text","left": "18.598484848484848%","top": "7.171717171717173%", "width": "28.645833333333332%", "height": "8.577441077441078%", "source": "&lt;span style=&quot;font-size: 680%; color: rgb(0, 0, 128); font-family: sancreekregular; background-color: rgb(255, 0, 0);&quot;&gt;Slide 135&lt;/span&gt;"},{"type": "image","left": "15.340909090909092%", "top": "30.134680134680135%","width": "46.515151515151516%","height": "47.138047138047135%","source": "DSCF3352_2.jpg"}]}');
+
+updateContent('{"type": "slide","isLandscape":true,"id": 136,"elements":[{"type": "text","left": "18.598484848484848%","top": "7.171717171717173%", "width": "28.645833333333332%", "height": "8.577441077441078%", "source": "&lt;span style=&quot;font-size: 680%; color: rgb(0, 0, 128); font-family: sancreekregular; background-color: rgb(255, 0, 0);&quot;&gt;Slide 136&lt;/span&gt;"},{"type": "image","left": "15.340909090909092%", "top": "30.134680134680135%","width": "46.515151515151516%","height": "47.138047138047135%","source": "DSCF3352_2.jpg"}]}');
+
+updateContent('{"type": "slide","isLandscape":true,"id": 137,"elements":[{"type": "text","left": "18.598484848484848%","top": "7.171717171717173%", "width": "28.645833333333332%", "height": "8.577441077441078%", "source": "&lt;span style=&quot;font-size: 680%; color: rgb(0, 0, 128); font-family: sancreekregular; background-color: rgb(255, 0, 0);&quot;&gt;Slide 137&lt;/span&gt;"},{"type": "image","left": "15.340909090909092%", "top": "30.134680134680135%","width": "46.515151515151516%","height": "47.138047138047135%","source": "DSCF3352_2.jpg"}]}');
+
+
+
+updateContent('{type: "playlist",id: 1111,"transitionMode": "fade-in-out", "slides":[ {"id": 136,"timing": 5},{"id": 137,"timing": 5} ]}');
+
+updateContent('{type: "playlist",id: 2222,"transitionMode": "fade-in-out", "slides":[ {"id": 134,"timing": 5},{"id": 135,"timing": 5} ]}');
+
+
+
+
+
+updateContent('{"type":"default","playlistId":1111}');
+
+
+
+
+
+
+
+setTimeout(function() {
+
+updateContent('{"type": "override","playlistId": 2222,"end": "10/19/2015 04:41:00"}');
+
+
+
+},5000
+
+);
 
 scheduleCheckAndRun();
 
