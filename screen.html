@@ -390,11 +390,11 @@ function scheduleCheckAndRun() {
     if (sec < 10) {
         sec = "0" + sec;
     }
-    var ampm = hr < 12 ? "am" : "pm";
+    //var ampm = hr < 12 ? "am" : "pm";
     //mmddyyyysec = (month) + '/' + numday + '/' + now.getUTCFullYear() + " " + hr + ":" + min + ":" + sec;
-    if (hr > 12) {
-        hr = hr - 12;
-    }
+    //if (hr > 12) {
+    //    hr = hr - 12;
+    //}
     if (hr < 10) {
         hr = "0" + hr;
     }
@@ -402,9 +402,9 @@ function scheduleCheckAndRun() {
 
 
     var date = now.getUTCDate();
-    var format = hr + ":" + min + ":" + sec + " " + ampm;
+    //var format = hr + ":" + min + ":" + sec + " " + ampm;
 	//console.log(override);
-    //console.log("mmddyyyysec == override.end" + mmddyyyysec + " == " + override.end + " mode: " + overridemode);
+    console.log("mmddyyyysec == override.end" + mmddyyyysec + " == " + override.end + " mode: " + overridemode);
 	if(override.playlistId && (Date.parse(mmddyyyysec) > Date.parse(override.end))){
 		if(overridemode){
 			//console.log("mmddyyyysec == override.end" + mmddyyyysec + " == " + override.end);
@@ -953,7 +953,7 @@ updateContent('{"type":"default","playlistId":1111}');
 
 setTimeout(function() {
 
-updateContent('{"type": "override","playlistId": 2222,"end": "10/19/2015 04:41:00"}');
+updateContent('{"type": "override","playlistId": 2222,"end": "10/20/2015 05:09:00"}');
 
 
 
