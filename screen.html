@@ -134,7 +134,7 @@ var mmddyyyysec;
 var defaultmode = false;
 var overridemode = false;
 var days = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
-
+var version = "5";
 var CANVAS_WIDTH, CANVAS_HEIGHT;
 var CANVAS_O_WIDTH = 1920;
 var CANVAS_O_HEIGHT = 1080;
@@ -552,7 +552,7 @@ function renderSlide(sId, effect){
 					if(slideJson.masterSlideId){
 						renderMSlide(slideJson.masterSlideId, true, effect);
 					} else {
-						
+						stopVideos();
 						document.getElementById("viewport").innerHTML = "";
 						document.getElementById("viewportmaster").innerHTML = "";
 						var newParent = document.getElementById('viewport');
@@ -573,7 +573,7 @@ function renderSlide(sId, effect){
 				}
 			}
 			
-		} else {document.getElementById("viewport").innerHTML = "";	document.getElementById("viewportmaster").innerHTML = "";}
+		} else {stopVideos(); document.getElementById("viewport").innerHTML = "";	document.getElementById("viewportmaster").innerHTML = "";}
     });
 
 }
@@ -622,6 +622,7 @@ function renderMSlide(sId, prerender, effect){
 			// looper waits for child elements to load
 			function looper(cname){
 				if(isLoaded(cname)){
+					stopVideos();
 					document.getElementById("viewport").innerHTML = "";
 					document.getElementById("viewportmaster").innerHTML = "";
 					currentmasterslide = sId;
@@ -675,8 +676,13 @@ function playVideos(){
 		videos[i].autoplay = true;
 		videos[i].play();
 		// specialVideoPlay function
+		
 	}
 
+	if(version < 4.4){
+		PlayAllVideos();
+		
+	}
 	getDivId = document.getElementById('viewport');
 	videos = getDivId.getElementsByTagName("video");
 	
@@ -687,6 +693,13 @@ function playVideos(){
 		// specialVideoPlay function
 	}
 
+}
+function stopVideos(){
+	if(version < 4.4){
+		StopAllVideos();
+		
+	}
+	
 }
 function renderElements(element, zi, prerender){
 	var cname;
@@ -742,8 +755,8 @@ function renderElements(element, zi, prerender){
 }
 
 function clearScreen(){
-	
-    document.getElementById("viewport").innerHTML = "";
+	stopVideos();	
+    	document.getElementById("viewport").innerHTML = "";
 	document.getElementById("viewportmaster").innerHTML = "";
 	document.getElementById("prerender").innerHTML = "";
 	document.getElementById("prerendermaster").innerHTML = "";
