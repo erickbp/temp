@@ -151,8 +151,8 @@ ucArr = [];
 
 //
 // Placeholders video callbacks to host
-function stopVideos(){};
-function playAllVideos(aVideoElements) {};
+// Android.stopAllVideos(){};
+// Android.playAllVideos(aVideoElements) {};
 
 
 ucExec = false;
@@ -564,7 +564,9 @@ function renderSlide(sId, effect){
 					if(slideJson.masterSlideId){
 						renderMSlide(slideJson.masterSlideId, true, effect, bNativeVideos ? aVideoElements : null);
 					} else {
+					    
 						stopVideos();
+	
 						document.getElementById("viewport").innerHTML = "";
 						document.getElementById("viewportmaster").innerHTML = "";
 						var newParent = document.getElementById('viewport');
@@ -667,23 +669,21 @@ function renderMSlide(sId, prerender, effect, aVideoElements){
 }
 
 function transferNodes(oldParent, newParent){
-		while (oldParent.childNodes.length > 0) {
-						newParent.appendChild(oldParent.childNodes[0].cloneNode(true));
-						try {
-							try{
-								oldParent.childNodes[0].src = "";
-							} catch(err1){console.log(err1)}
-							oldParent.removeChild(oldParent.childNodes[0]);
-						} catch (err){console.log(err)}
-						
-					}
-		oldParent.innerHTML = "";
+
+	newParent.innerHTML = oldParent.innerHTML;
+	oldParent.innerHTML = "";
+}
+function stopVideos()
+{
+	if ( bNativeVideos) {
+		Android.StopAllVideos();
+	}
 }
 function playVideos(aVideoElements){
 
 
     if ( bNativeVideos) {
-		playAllVideos(aVideoElements)
+		Android.playAllVideos(aVideoElements)
 	} else {
 		var getDivId = document.getElementById('viewportmaster');
 		var videos = getDivId.getElementsByTagName("video");
@@ -769,8 +769,9 @@ function renderElements(element, zi, prerender, aVideoElements){
 }
 
 function clearScreen(){
+    
 	stopVideos();	
-    	document.getElementById("viewport").innerHTML = "";
+	document.getElementById("viewport").innerHTML = "";
 	document.getElementById("viewportmaster").innerHTML = "";
 	document.getElementById("prerender").innerHTML = "";
 	document.getElementById("prerendermaster").innerHTML = "";
