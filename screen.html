@@ -11,6 +11,10 @@
 
 
     <style>
+	    .text-object {
+		//TODO bert.. look at this does it break? 
+		 -webkit-transform: translate3d(0, 0, 1px);
+		}
         .visible {
             visibility: visible;
             opacity: 1;
@@ -39,9 +43,13 @@
 			left: 0;
 			width: 100%;
 			height: 100%;
+			
 		}
 		
         .rotate90 {
+		
+		
+		
             -moz-transform-origin: 0 0;
             -ms-transform-origin: 0 0;
             -o-transform-origin: 0 0;
@@ -52,6 +60,12 @@
             -moz-transform: rotate(90deg);
             -o-transform: rotate(90deg);
             transform: rotate(90deg);
+			
+			
+		
+		
+			
+			
         }
 
         .rotate180 {
@@ -85,7 +99,7 @@
 <body>
 <input type='text' id='data' value="7th data" style="display:none"><input type="submit" style="display:none" value="updateContent(data)" onClick="updateContent(document.getElementById('data').value);">
 <div id="topContainer">
-	<div id="viewport" style="left:0;top:0;display:block;height:100%;width:100%;position:absolute;background-color:transparent;z-index:15;overflow:hidden"></div>
+	<div id="viewport" style="left:0;top:0;display:block;height:100%;width:100%;position:absolute;background-color:transparent;z-index:15;overflow:hidden;"></div>
 	<div id="viewportmaster" style="left:0;top:0;display:block;height:100%;width:100%;position:absolute;background-color:transparent;z-index:5;overflow:hidden"></div>
 
 	<div id="prerender" style="display:block;height:0;width:0;position:absolute;background-color:transparent;border:1px solid black;margin-top:500px;overflow:hidden"></div>
@@ -683,7 +697,12 @@ function playVideos(aVideoElements){
 
 
     if ( bNativeVideos) {
-		Android.playAllVideos(aVideoElements)
+		try{
+			Android.playAllVideos(JSON.stringify(aVideoElements));
+		 } 
+		 catch (err) {
+		 //TODO bert add console output or?
+		 }
 	} else {
 		var getDivId = document.getElementById('viewportmaster');
 		var videos = getDivId.getElementsByTagName("video");
@@ -996,10 +1015,14 @@ updateContent('{type: "playlist",id: 2222,"transitionMode": "fade-in-out", "slid
 
 
 
+updateContent('{type: "playlist",id: 12345,"transitionMode": "fade-in-out", "slides":[ {"id": 119,"timing": 150} ]}');
+
 
 updateContent('{"type":"default","playlistId":1111}');
+updateContent('{"type":"default","playlistId":12345}');
 
-
+updateContent('{"type":"slide","id":119,"isLandscape":false,"elements":[{"type":"video","left":"0.411522633744856%","top":"-0.05208333333333202%","width":"99.7942386831276%","height":"33.68055555555558%","source":"vid1.mp4","play":"once"},{"type":"video","left":"0.411522633744856%","top":"36.23842592592593%","width":"99.7942386831276%","height":"33.68055555555558%","source":"vid2.mp4","play":"once"},{"type":"text","left":"31.893004115226336%","top":"32.75462962962962%","width":"50.925925925925924%","height":"4.137731481481482%","source":"&lt;span style=&quot;font-size: 400%; color: rgb(0, 0, 0); font-family: sancreekregular;&quot;&gt;AudioWide&lt;/span&gt;"},{"type":"text","left":"3.4979423868312756%","top":"0.9259259259259259%","width":"50.925925925925924%","height":"6.377314814814815%","source":"&lt;span style=&quot;font-size: 640%; color: rgb(0, 0, 0); font-family: sancreekregular;&quot;&gt;cinzel&lt;/span&gt;"}]}');
+updateContent('{"type":"slide","id":119,"isLandscape":false,"elements":[{"type":"text","left":"3.4979423868312756%","top":"0.9259259259259259%","width":"50.925925925925924%","height":"6.377314814814815%","source":"&lt;span style=&quot;font-size: 640%; color: rgb(0, 0, 0); font-family: sancreekregular;&quot;&gt;cinzel&lt;/span&gt;"},{"type":"video","left":"0.411522633744856%","top":"-0.05208333333333202%","width":"99.7942386831276%","height":"33.68055555555558%","source":"vid1.mp4","play":"once"},{"type":"video","left":"0.411522633744856%","top":"36.23842592592593%","width":"99.7942386831276%","height":"33.68055555555558%","source":"vid2.mp4","play":"once"},{"type":"text","left":"31.893004115226336%","top":"32.75462962962962%","width":"50.925925925925924%","height":"4.137731481481482%","source":"&lt;span style=&quot;font-size: 400%; color: rgb(0, 0, 0); font-family: sancreekregular;&quot;&gt;AudioWide&lt;/span&gt;"}]}');
 
 
 
