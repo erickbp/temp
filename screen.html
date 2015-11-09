@@ -690,7 +690,12 @@ function transferNodes(oldParent, newParent){
 function stopVideos()
 {
 	if ( bNativeVideos) {
-		Android.StopAllVideos();
+		try {
+			Android.StopAllVideos();
+		} catch (err)
+		{
+			console.log("Directable - stopVideos exception= " + err.message)
+		}
 	}
 }
 function playVideos(aVideoElements){
@@ -701,7 +706,7 @@ function playVideos(aVideoElements){
 			Android.playAllVideos(JSON.stringify(aVideoElements));
 		 } 
 		 catch (err) {
-		 //TODO bert add console output or?
+			console.log("Directable - playAllVideos exception=" + err.message)
 		 }
 	} else {
 		var getDivId = document.getElementById('viewportmaster');
