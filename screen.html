@@ -691,7 +691,7 @@ function stopVideos()
 {
 	if ( bNativeVideos) {
 		try {
-			Android.StopAllVideos();
+			Android.stopAllVideos();
 		} catch (err)
 		{
 			console.log("Directable - stopVideos exception= " + err.message)
