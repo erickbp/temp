@@ -1,0 +1,226 @@
+﻿/* Common app styling */
+
+@body-bg-color: #18669d;
+@brand-text-color: #0d61a2;
+@hr-top-border: #054c7e;
+@hr-bottom-border: #2a84c4;
+@header-footer-bgcolor: #f6f6f6;
+@footer-text-color: #555555;
+
+@signin-bgcolor: #73db16;
+@signup-bgcolor: #ff9422;
+
+html{
+    margin: 0;
+    padding: 0;
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    background: @body-bg-color;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: white;
+    padding: 50px 0 0 0;
+    height: 100%;
+    margin-bottom: 60px;
+}
+
+#notification-message {
+    background-color: #ff6a00;
+    color: #fff;
+    position: absolute;
+    width: 100%;
+    min-height: 80px;
+    right: 0;
+    z-index: 99999;
+    top: 0;
+    display: none; /* Hidden until invoked */
+    padding: 15px;
+
+    #notification-message-header {
+        font-size: medium;
+        margin-bottom: 10px;
+    }
+
+    #notification-message-close {
+        background-image: url("../Images/Close.png");
+        background-repeat: no-repeat;
+        width: 24px;
+        height: 24px;
+        position: absolute;
+        right: 5px;
+        top: 5px;
+        cursor: pointer;
+    }
+}
+
+.navbar-default .navbar-brand{
+    color: @brand-text-color;
+}
+
+h1{
+    font-size: 42px;
+}
+
+hr, .division {
+    border-top: 1px solid @hr-top-border;
+    border-bottom: 1px solid @hr-bottom-border;
+}
+
+@border-color: #11548b;
+
+.btn{
+    font-weight: bold;
+    font-size: 16px;
+    text-transform: uppercase;
+    text-align: left;
+    color: white;
+
+    box-shadow: @border-color 1px 1px 5px;
+    padding: 15px;
+    margin: 10px 0;
+}
+
+.btn-signin{
+    background: @signin-bgcolor;
+}
+
+.btn-signin::after, .btn-signup::after{
+    content: ">";
+    position: absolute;
+    right: 15px;
+}
+
+.btn-signup{
+    background: @signup-bgcolor;
+}
+
+.btn-back{
+    background: @header-footer-bgcolor;
+    color: @brand-text-color;
+    border: 1px solid @border-color;
+    box-shadow: none;
+    padding: 7px 15px;
+    margin: 5px 0;
+}
+
+label{
+    font-weight: normal;
+}
+
+span.info{
+    color: #5dbbfe;
+    font-size: 15px;
+}
+
+.footer {
+    color: @footer-text-color;
+    background: @header-footer-bgcolor;
+    bottom: 0;
+    height: 60px;
+    position: absolute;
+    width: 100%;
+    font-size: 14px;
+}
+
+.container .text-muted {
+    margin: 20px 0;
+}
+
+.directable-icon{
+    display: inline-block;
+    vertical-align: middle;
+    background-image: url('../Images/sprite.png');
+    background-repeat: no-repeat;
+	width: 65px;
+	height: 65px;
+}
+
+.failed{
+    background-position: -7px -10px;
+}
+
+.success{
+    background-position: -83px -9px;
+}
+
+.clock{
+    background-position: -159px -10px;
+}
+
+.publishing-progress{
+    border: 2px solid white;
+    border-radius: 15px;
+    height: 15px;
+    width: 100%;
+    color: @signin-bgcolor;
+}
+
+progress::-webkit-progress-value{ 
+    background: @signin-bgcolor; 
+}
+
+progress.upload-failed{
+    color: @signup-bgcolor;
+}
+
+progress.upload-failed::-webkit-progress-value{ 
+    background: @signup-bgcolor; 
+}
+
+progress::-webkit-progress-bar{
+    background: white;
+}
+
+.waiting-container{
+    padding: 20px 0;
+}
+
+@blockui-background: rgba(0, 0, 0, 0.6);
+
+.block-ui {
+    min-height: 100%;
+    -moz-min-width: 100%;
+    -ms-min-width: 100%;
+    -o-min-width: 100%;
+    -webkit-min-width: 100%;
+    min-width: 100%;
+
+    width: 100%;
+
+    display: block;
+    background: #000000;
+    background: @blockui-background;
+    position: absolute;
+    top: 0;
+    z-index: 9999;
+    margin: 0;
+}
+
+.loading{
+    position: absolute;
+    top: 40%;
+    width: 100%;
+    margin: 0 auto;
+    display: block;
+    text-align: center;
+    vertical-align: middle;
+}
+
+#loading-image {
+    background-image: url("../Images/loading.gif");
+    background-repeat: no-repeat;
+    width: 45px;
+    height: 45px;
+    display: block;
+    margin: auto;
+}
+
+.directable{
+    display: block;
+    background-image: url("../Images/directable.png");
+    background-repeat: no-repeat;
+    width: 128px;
+    height: 24px;
+}

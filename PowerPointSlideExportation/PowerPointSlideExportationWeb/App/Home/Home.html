@@ -1,0 +1,210 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <title></title>
+
+    <script src="../../Content/Scripts/jquery-1.9.1.js" type="text/javascript"></script>
+    <!--<script src="http://localhost:1337/vorlon.js"></script>-->
+    <!--<script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js" type="text/javascript"></script>-->
+    <!-- To enable offline debugging using a local reference to Office.js, use: -->
+    <script src="../../Content/Scripts/Office/MicrosoftAjax.js" type="text/javascript"></script>
+    <script src="../../Content/Scripts/Office/1/office.js" type="text/javascript"></script>
+
+    <!--<link href="../../Content/Office.css" rel="stylesheet" type="text/css" />-->
+    <link href="../../Content/styles/bootstrap.css" rel="stylesheet" type="text/css" />
+    <link href="../../Content/styles/App.css" rel="stylesheet" type="text/css" />
+
+    <script src="../App.js" type="text/javascript"></script>
+    <script src="Home.js" type="text/javascript"></script>
+</head>
+<body>
+<div class="body-container">
+    <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <a href="#" class="navbar-brand"><span class="directable"></span></a>
+            </div>
+            <div class="back-container">
+                <button class="btn btn-back col-xs-12 col-sm-6" id="back"><span class="glyphicon glyphicon-chevron-left"></span> Back</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container body-content">
+        <div class="welcome-container">
+            <div class="row">
+                <h1 class="col-xs-12 col-sm-12">Hello!</h1>
+
+                <div class="col-xs-12 col-sm-6">
+                    <p>
+                        Tincidunt integer eu augue augue nunc elit dolor, luctus placerat scelerisque euismod, iaculis eu lacus nunc mi elit, vehicula ut laoreet ac, aliquam sit amet justo nunc tempor, metus vel.
+                        Tincidunt integer eu augue augue nunc elit dolor, luctus placerat scelerisque euismod, iaculis eu lacus nunc mi elit, vehicula ut laoreet ac, aliquam sit amet justo nunc tempor, metus vel.
+                    </p>
+                </div>
+            </div>
+            <div class="clearfix"></div>
+
+            <div class="row">
+                <hr class="division"/>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <a href="#" class="btn btn-signin col-xs-12 col-sm-6" id="signin-btn">Sign In</a>
+            <div class="clearfix"></div>
+            <a href="#" class="btn btn-signup col-xs-12 col-sm-6" id="signup-btn">Sign Up</a>
+
+            <input type="hidden" value="tokenvalue" id="welcome-token"/>
+        </div>
+
+        <div class="waiting-container">
+            <h2>
+                <span class="directable-icon clock"></span> Waiting for you to sign in
+            </h2>
+        </div>
+
+        <div class="publish-container">
+            <div class="row">
+                <h1 class="col-xs-12 col-sm-12">Ready to Publish!</h1>
+
+                <div class="col-xs-12 col-sm-6">
+                    <p>
+                        Tincidunt integer eu augue augue nunc elit dolor, luctus placerat scelerisque euismod, iaculis eu lacus nunc mi elit, vehicula ut laoreet ac, aliquam sit amet justo nunc tempor, metus vel.
+                        Tincidunt integer eu augue augue nunc elit dolor, luctus placerat scelerisque euismod, iaculis eu lacus nunc mi elit, vehicula ut laoreet ac, aliquam sit amet justo nunc tempor, metus vel.
+                        Tincidunt integer eu augue augue nunc elit dolor, luctus placerat scelerisque euismod, iaculis eu lacus nunc mi elit, vehicula ut laoreet ac, aliquam sit amet justo nunc tempor, metus vel.
+                    </p>
+                </div>
+            </div>
+
+            <div class="clearfix"></div>
+            <div class="row">
+                <hr class="division"/>
+            </div>
+            <div class="clearfix"></div>
+
+            <a href="#" class="btn btn-signin col-xs-12 col-sm-6" id="publish-btn">Publish</a>
+        </div>
+
+        <div class="publishing-container">
+            <div class="row">
+                <h1 class="col-xs-12 col-sm-12">Publishing</h1>
+
+                <div class="col-xs-12 col-sm-6">
+                    <p>
+                        Tincidunt integer eu augue augue nunc elit dolor, luctus placerat scelerisque euismod, iaculis eu lacus nunc mi elit, vehicula ut laoreet ac, aliquam sit amet justo nunc tempor, metus vel.
+                        Tincidunt integer eu augue augue nunc elit dolor, luctus placerat scelerisque euismod, iaculis eu lacus nunc mi elit, vehicula ut laoreet ac, aliquam sit amet justo nunc tempor, metus vel.
+                        Tincidunt integer eu augue augue nunc elit dolor, luctus placerat scelerisque euismod, iaculis eu lacus nunc mi elit, vehicula ut laoreet ac, aliquam sit amet justo nunc tempor, metus vel.
+                    </p>
+                </div>
+            </div>
+
+            <div class="clearfix"></div>
+            <div class="row">
+                <hr class="division"/>
+            </div>
+            <div class="clearfix"></div>
+
+            <div class="row col-sm-6">
+                <span class="publishing-percent">0 %</span>
+                <progress class="publishing-progress" id="publishing-progress" value="0" max="0"></progress>
+            </div>
+
+            <div class="success-container">
+                <div class="row">
+                    <hr class="division"/>
+                </div>
+                <h2 class="success-title">
+                    <span class="directable-icon success"></span> Successful !!
+                </h2>
+                <h2 class="failed-title">
+                    <span class="directable-icon failed"></span> Failed !!
+                </h2>
+            </div>
+        </div>
+
+        <div class="signup-container">
+            <h2>Sign up today for a 30 days free trial</h2>
+            <span class="info">No credit card required</span>
+
+            <form class="form-horizontal" role="form" method="POST">
+                <fieldset class="row">
+                    <hr/>
+                    <div class="col-sm-4">
+                        <label for="id_email">Email</label>
+                        <input type="email" class="form-control" id="id_email" name="email" required placeholder="jane.doe@example.com">
+                    </div>
+
+                    <div class="col-sm-4">
+                        <label for="password">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required placeholder="Password">
+                    </div>
+
+                    <div class="col-sm-4">
+                        <label for="id_confirm_password">Confirm Password</label>
+                        <input type="password" class="form-control" id="id_confirm_password" name="confirm_password" required placeholder="Password">
+                    </div>
+                </fieldset>
+
+                <fieldset class="row">
+                    <hr/>
+                    <div class="col-sm-4">
+                        <label for="id_userFullName">Name</label>
+                        <input type="text" class="form-control" id="id_userFullName" name="userFullName" placeholder="Name">
+                    </div>
+
+                    <div class="col-sm-4">
+                        <label for="id_company">Company (not required)</label>
+                        <input type="text" class="form-control" id="id_company" name="company" placeholder="Company (not required)">
+                    </div>
+
+                    <div class="col-sm-4">
+                        <label for="phone">Phone (not required)</label>
+                        <input type="text" class="form-control" id="id_phone" name="phone" placeholder="Phone (not required)">
+                    </div>
+                    <div class="clearfix"></div>
+                    <hr/>
+                    <div class="col-sm-12">
+                        <label for="id_comments">Comments (not required)</label>
+                        <input type="hidden" id="id_token" name="token"/>
+                        <textarea id="id_comments" class="form-control" rows="3" name="comments" placeholder="Comments (not required)"></textarea>
+                    </div>
+                </fieldset>
+
+                <div class="clearfix"></div>
+                <div class="row">
+                    <hr class="division"/>
+                </div>
+
+                <button class="btn btn-signup col-sm-6" id="btn-signup-submit">Sign Up</button>
+            </form>
+        </div>
+
+        <div class="failed-container">
+            <div class="row">
+                <hr class="division"/>
+            </div>
+            <h2><span class="directable-icon failed"></span> Failed !!
+            </h2>
+            <div class="row">
+                <hr class="division"/>
+            </div>
+            <button class="btn btn-signup col-sm-3">Tray again</button>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p class="text-muted">Directable &copy; 2016</p>
+        </div>
+    </footer>
+</div>
+
+    <div class="block-ui">
+        <div class="loading">
+            <span id="loading-image"></span>
+        </div>
+    </div>
+</body>
+</html>
