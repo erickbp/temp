@@ -3,8 +3,8 @@
 /// -
 (function () {
     "use strict";
-    var baseUrl = "https://localhost:44300/PowerPoint/";
-    //var BaseURL = "https://testanddebug.azurewebsites.net/PowerPoint/";
+    //var baseUrl = "https://localhost:44300/PowerPoint/";
+    var baseUrl = "https://testanddebug.azurewebsites.net/PowerPoint/";
     var sendFileUrl = baseUrl + "Publish";
     var signInUrl = baseUrl + "SignIn/";
     var getTokenUrl = baseUrl + "Token";
@@ -23,20 +23,20 @@
 
             $(".block-ui").hide();
 
-            $(document)
-                .ajaxStart(function() {
-                    $(".block-ui").show();
-                })
-                .ajaxStop(function() {
-                    $(".block-ui").hide("slow");
-                });
+            //$(document)
+            //    .ajaxStart(function() {
+            //        $(".block-ui").show();
+            //    })
+            //    .ajaxStop(function() {
+            //        $(".block-ui").hide("slow");
+            //    });
 
             $.ajax({
                 url: getTokenUrl,
                 method: "GET"
             }).done(function (token) {
                 Office.context.document.settings.set("token", token);
-            }).fail(function() {
+            }).fail(function () {
                 app.showNotification("Token Error", "Token not recieved, reload");
             });
 
@@ -56,7 +56,7 @@
 
                 var token = Office.context.document.settings.get("token");
                 testToken(token);
-                interval = setInterval(function () {testToken(token);}, 60000);
+                interval = setInterval(function () { testToken(token); }, 60000);
             });
 
             function testToken(token) {
@@ -66,6 +66,7 @@
                 }).done(function (isValid) {
                     if (isValid.toLowerCase() === "true") {
                         clearInterval(interval);
+                        $('.waiting-container').hide();
                         showPublish();
                     }
                 }).fail(function () {
@@ -89,18 +90,13 @@
 
             $("#back").click(goBack);
 
-            $("#btn-signup-submit").click(function (e) {
-                e.preventDefault();
-                postSignUp();
-                return false;
-            });
+            $("#btn-signup-submit").click(postSignUp);
 
             showWelcome();
         });
     };
 
-    function openSignIn()
-    {
+    function openSignIn() {
         window.open(signInUrl + Office.context.document.settings.get("token"));
     }
 
@@ -167,7 +163,7 @@
                     app.showNotification("Request error:", result["error"]);
                 }
 
-            }).fail(function() {
+            }).fail(function () {
                 $(".failed-title").show();
                 $("#publishing-progress").addClass("upload-failed");
                 closeFile(state);
@@ -175,8 +171,7 @@
         }
     }
 
-    function getSlice(state)
-    {
+    function getSlice(state) {
         state.file.getSliceAsync(state.counter, function (result) {
             if (result.status === Office.AsyncResultStatus.Succeeded) {
                 sendSlice(result.value, state);
@@ -233,32 +228,57 @@
         $(".publishing-container").hide();
     }
 
-    function postSignUp() {
+    function postSignUp(e) {
         var $form = $("form");
-        $form.find("#token").val(Office.context.document.settings.get("token"));
-
-        $.ajax({
-                url: destinationUrl,
-                method: "POST",
-                data: $form.serializeArray()
-            })
-            .done(function (result) {
-                result = JSON.parse(result);
-                if (result["code"] === "Success") {
-                    // save token and go to publish
-                    Office.context.document.settings.set("token", result["token"]);
-                    $(".signup-container").hide();
-
-                    showPublish();
-                } else if (result["code"] === "NeedResync") {
-                    window.location.reload();
-                } else {
-                    app.showNotification("Request error:", result["error"]);
+        $form.validate({
+            rules: {
+                password: { required: true, minlength: 6 },
+                confirm_password: { required: true, equalTo: "#password" }
+            },
+            invalidHandler: function (event, validator) {
+                // 'this' refers to the form
+                var errors = validator.numberOfInvalids();
+                if (errors) {
+                    var message = errors === 1
+                      ? 'You missed 1 field. It has been highlighted'
+                      : 'You missed ' + errors + ' fields. They have been highlighted';
+                    app.showNotification("Form error:", message);
                 }
-            })
-            .fail(function () {
-                app.showNotification("Request error:", "An error has ocurred, please try again");
-            });
+            },
+            submitHandler: function (form) {
+                $(".block-ui").show();
+                var $form = $(form);
+                $form.find("#token").val(Office.context.document.settings.get("token"));
+
+                $.ajax({
+                    url: destinationUrl,
+                    method: "POST",
+                    data: $form.serialize()
+                })
+                    .done(function (result) {
+                        result = JSON.parse(result);
+                        if (result["code"] === "Success") {
+                            // save token and go to publish
+                            //Office.context.document.settings.set("token", result["token"]);
+                            $(".signup-container").hide();
+
+                            showPublish();
+                        } else if (result["code"] === "NeedResync") {
+                            window.location.reload();
+                        } else {
+                            app.showNotification("Request error:", result["error"]);
+                        }
+
+                        return false; // blocks redirect after submission via ajax
+                    })
+                    .fail(function () {
+                        app.showNotification("Request error:", "An error has ocurred, please try again");
+                    })
+                    .always(function () {
+                        $(".block-ui").hide();
+                    });
+            }
+        });
     }
 
     function showSignUp() {

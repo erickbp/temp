@@ -70,6 +70,8 @@
   <ItemGroup>
     <Content Include="Content\Images\directable.png" />
     <Content Include="Content\Images\sprite.png" />
+    <Content Include="Content\Scripts\jquery.validate.js" />
+    <Content Include="Content\Scripts\jquery.validate.min.js" />
     <Content Include="Content\styles\App.css">
       <DependentUpon>App.less</DependentUpon>
     </Content>
