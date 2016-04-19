@@ -6,8 +6,9 @@
     var baseUrl = "https://localhost:44300/PowerPoint/";
     //var BaseURL = "https://testanddebug.azurewebsites.net/PowerPoint/";
     var sendFileUrl = baseUrl + "Publish";
-    var signInUrl = baseUrl + "Test";
+    var signInUrl = baseUrl + "SignIn/";
     var getTokenUrl = baseUrl + "Token";
+    var testTokenUrl = baseUrl + "Test/";
     var destinationUrl = baseUrl + "SignUp";
 
     var sliceSize = (256 * 1024);
@@ -52,20 +53,26 @@
                 $(".back-container").show();
 
                 openSignIn();
-                interval = setInterval(function () {
-                    // wait for token
-                    $.ajax({
-                        url: getTokenUrl,
-                        method: "GET"
-                    }).done(function (token) {
-                        Office.context.document.settings.set("token", token);
+
+                var token = Office.context.document.settings.get("token");
+                testToken(token);
+                interval = setInterval(function () {testToken(token);}, 60000);
+            });
+
+            function testToken(token) {
+                $.ajax({
+                    url: testTokenUrl + token,
+                    method: "GET"
+                }).done(function (isValid) {
+                    if (isValid.toLowerCase() === "true") {
                         clearInterval(interval);
                         showPublish();
-                    }).fail(function () {
-                        app.showNotification("Token Error", "Token not recieved, reload");
-                    });
-                }, 120000);
-            });
+                    }
+                }).fail(function () {
+                    app.showNotification("Error", "There was a connection problem.");
+                });
+            }
+
 
             $("#publish-btn").click(function () {
 
