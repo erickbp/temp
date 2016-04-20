@@ -3,17 +3,19 @@
 /// -
 (function () {
     "use strict";
-    //var baseUrl = "https://localhost:44300/PowerPoint/";
-    var baseUrl = "https://testanddebug.azurewebsites.net/PowerPoint/";
+    var baseUrl = "https://localhost:44300/PowerPoint/";
+    //var baseUrl = "https://testanddebug.azurewebsites.net/PowerPoint/";
     var sendFileUrl = baseUrl + "Publish";
     var signInUrl = baseUrl + "SignIn/";
     var getTokenUrl = baseUrl + "Token";
     var testTokenUrl = baseUrl + "Test/";
-    var destinationUrl = baseUrl + "SignUp";
+    var signUpUrl = baseUrl + "SignUp";
 
     var sliceSize = (256 * 1024);
     var interval;
     var history = [];
+
+    var globalToken;
 
     // The initialize function must be run each time a new page is loaded
     Office.initialize = function (/*reason*/) {
@@ -23,19 +25,11 @@
 
             $(".block-ui").hide();
 
-            //$(document)
-            //    .ajaxStart(function() {
-            //        $(".block-ui").show();
-            //    })
-            //    .ajaxStop(function() {
-            //        $(".block-ui").hide("slow");
-            //    });
-
             $.ajax({
                 url: getTokenUrl,
                 method: "GET"
             }).done(function (token) {
-                Office.context.document.settings.set("token", token);
+                globalToken = token;
             }).fail(function () {
                 app.showNotification("Token Error", "Token not recieved, reload");
             });
@@ -54,9 +48,8 @@
 
                 openSignIn();
 
-                var token = Office.context.document.settings.get("token");
-                testToken(token);
-                interval = setInterval(function () { testToken(token); }, 60000);
+                testToken(globalToken);
+                interval = setInterval(function () { testToken(globalToken); }, 60000);
             });
 
             function testToken(token) {
@@ -65,8 +58,11 @@
                     method: "GET"
                 }).done(function (isValid) {
                     if (isValid.toLowerCase() === "true") {
+
+                        Office.context.document.settings.set("token", globalToken);
+
                         clearInterval(interval);
-                        $('.waiting-container').hide();
+                        $(".waiting-container").hide();
                         showPublish();
                     }
                 }).fail(function () {
@@ -97,7 +93,7 @@
     };
 
     function openSignIn() {
-        window.open(signInUrl + Office.context.document.settings.get("token"));
+        window.open(signInUrl + globalToken);
     }
 
     function b64EncodeUnicode(str) {
@@ -126,17 +122,17 @@
         if (data) {
 
             // Encode the slice data, a byte array, as a Base64 string.
-            var fileData = b64EncodeUnicode(data);
+            var json = {
+                "token": globalToken,
+                "index": slice.index,
+                "total": state.sliceCount,
+                "data": b64EncodeUnicode(data)
+            };
 
             $.ajax({
                 method: "POST",
                 url: sendFileUrl,
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader("Slice-Number", slice.index);
-                    xhr.setRequestHeader("Slice-Total", state.sliceCount);
-                    xhr.setRequestHeader("File-Name", Office.context.document.settings.get('token'));
-                },
-                data: fileData
+                data: JSON.stringify(json)
             }).done(function (result) {
                 result = JSON.parse(result);
                 if (result["code"] === "Success") {
@@ -228,7 +224,7 @@
         $(".publishing-container").hide();
     }
 
-    function postSignUp(e) {
+    function postSignUp() {
         var $form = $("form");
         $form.validate({
             rules: {
@@ -248,18 +244,19 @@
             submitHandler: function (form) {
                 $(".block-ui").show();
                 var $form = $(form);
-                $form.find("#token").val(Office.context.document.settings.get("token"));
+                $form.find("#token").val(globalToken);
 
                 $.ajax({
-                    url: destinationUrl,
+                    url: signUpUrl,
                     method: "POST",
                     data: $form.serialize()
                 })
                     .done(function (result) {
                         result = JSON.parse(result);
                         if (result["code"] === "Success") {
-                            // save token and go to publish
-                            //Office.context.document.settings.set("token", result["token"]);
+                            
+                            Office.context.document.settings.set("token", globalToken);
+
                             $(".signup-container").hide();
 
                             showPublish();
