@@ -3,8 +3,8 @@
 /// -
 (function () {
     "use strict";
-    var baseUrl = "https://localhost:44300/PowerPoint/";
-    //var baseUrl = "https://testanddebug.azurewebsites.net/PowerPoint/";
+    //var baseUrl = "https://localhost:44300/PowerPoint/";
+    var baseUrl = "https://testanddebug.azurewebsites.net/PowerPoint/";
     var sendFileUrl = baseUrl + "Publish";
     var signInUrl = baseUrl + "SignIn/";
     var getTokenUrl = baseUrl + "Token";
@@ -23,16 +23,7 @@
             app.initialize();
             $.support.cors = true;
 
-            $(".block-ui").hide();
-
-            $.ajax({
-                url: getTokenUrl,
-                method: "GET"
-            }).done(function (token) {
-                globalToken = token;
-            }).fail(function () {
-                app.showNotification("Token Error", "Token not recieved, reload");
-            });
+            $(".block-ui").hide();            
 
             $("#signup-btn").click(showSignUp);
 
@@ -60,6 +51,7 @@
                     if (isValid.toLowerCase() === "true") {
 
                         Office.context.document.settings.set("token", globalToken);
+                        Office.context.document.settings.saveAsync();
 
                         clearInterval(interval);
                         $(".waiting-container").hide();
@@ -88,7 +80,21 @@
 
             $("#btn-signup-submit").click(postSignUp);
 
-            showWelcome();
+            if (Office.context.document.settings.get("token") == undefined) {
+                showWelcome();
+
+                $.ajax({
+                    url: getTokenUrl,
+                    method: "GET"
+                }).done(function (token) {
+                    globalToken = token;
+                }).fail(function () {
+                    app.showNotification("Token Error", "Token not recieved, reload");
+                });
+            }
+            else {
+                showPublish();
+            }
         });
     };
 
@@ -148,6 +154,7 @@
                         $("#publishing-progress").val(state.counter);
                         closeFile(state);
                         $(".success-title").show();
+                        updateHeader(false);
                     }
                 } else if (result["code"] === "NeedResync") {
                     window.location.reload();
@@ -157,11 +164,13 @@
                     closeFile(state);
 
                     app.showNotification("Request error:", result["error"]);
+                    updateHeader(false);
                 }
 
             }).fail(function () {
                 $(".failed-title").show();
                 $("#publishing-progress").addClass("upload-failed");
+                updateHeader(false);
                 closeFile(state);
             });
         }
@@ -176,6 +185,7 @@
                 $(".success-title").hide();
                 $(".failed-title").show();
                 $("#publishing-progress").addClass("upload-failed");
+                updateHeader(false);
             }
         });
     }
@@ -206,7 +216,9 @@
                     $(".success-title").hide();
                     $(".failed-title").show();
                     $("#publishing-progress").addClass("upload-failed");
+                    updateHeader(false);
                 }
+                
             });
     }
 
@@ -220,8 +232,15 @@
     function showPublish() {
         history.push(showWelcome);
 
-        $(".publish-container").show();
+        $(".back-container").hide();
+        $(".waiting-container").hide();
         $(".publishing-container").hide();
+        $(".signup-container").hide();
+        $(".failed-container").hide();
+        $(".welcome-container").hide();
+        $(".publish-container").show();
+
+        updateHeader(true);
     }
 
     function postSignUp() {
@@ -256,6 +275,7 @@
                         if (result["code"] === "Success") {
                             
                             Office.context.document.settings.set("token", globalToken);
+                            Office.context.document.settings.saveAsync();
 
                             $(".signup-container").hide();
 
@@ -299,5 +319,16 @@
         $(".publishing-container").hide();
         $(".signup-container").hide();
         $(".failed-container").hide();
+    }
+
+    function updateHeader(showDirectable) {
+        if (showDirectable) {
+            $(".back-container").hide();
+            $(".navbar-header").show("slow");
+        }
+        else {
+            $(".navbar-header").hide();
+            $(".back-container").show();
+        }
     }
 })();
