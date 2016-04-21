@@ -3,8 +3,8 @@
 /// -
 (function () {
     "use strict";
-    var baseUrl = "https://localhost:44300/PowerPoint/";
-    //var baseUrl = "https://testanddebug.azurewebsites.net/PowerPoint/";
+    //var baseUrl = "https://localhost:44300/PowerPoint/";
+    var baseUrl = "https://testanddebug.azurewebsites.net/PowerPoint/";
     var sendFileUrl = baseUrl + "Publish";
     var signInUrl = baseUrl + "SignIn/";
     var getTokenUrl = baseUrl + "Token";
@@ -20,10 +20,9 @@
     // The initialize function must be run each time a new page is loaded
     Office.initialize = function (/*reason*/) {
         $(document).ready(function () {
-
             app.initialize();
             $.support.cors = true;
-            
+
             $(".block-ui").hide();
 
             $.ajax({
@@ -93,12 +92,6 @@
         });
     };
 
-    function getPowerPointName() {
-        var fullPath = Office.context.document.url;
-        var filename = fullPath.replace(/^.*[\\\/]/, "");
-        return filename;
-    }
-
     function openSignIn() {
         window.open(signInUrl + globalToken);
     }
@@ -131,7 +124,6 @@
             // Encode the slice data, a byte array, as a Base64 string.
             var json = {
                 "token": globalToken,
-                "name": getPowerPointName(),
                 "index": slice.index,
                 "total": state.sliceCount,
                 "data": b64EncodeUnicode(data)
@@ -189,7 +181,7 @@
     }
 
     function sendFile() {
-        Office.context.document.getFileAsync(Office.FileType.Pdf, { sliceSize: sliceSize },
+        Office.context.document.getFileAsync("compressed", { sliceSize: sliceSize },
             function (result) {
 
                 if (result.status === Office.AsyncResultStatus.Succeeded) {
